@@ -2,7 +2,7 @@
 
 # tng-sdk-project
 
-The repository contains the `tng-sdk-project` component that is part of the [5GTANGO](http://www.5gtango.eu) SDK. This component is responsible to manage network service projects on the VNF and network service developers machine.
+The repository contains the `tng-sdk-project` component that is part of the [5GTANGO](http://www.5gtango.eu) SDK. This component is responsible to manage network service projects on the developer's machine.
 
 The seed code of this component is based on the `son-cli` toolbox that was developed as part of SONATA-NFV ([http://sonata-nfv.eu](http://sonata-nfv.eu)).
 
