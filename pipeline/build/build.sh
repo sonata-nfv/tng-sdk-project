@@ -1,2 +1,4 @@
 #!/bin/bash
-echo "not implemented"
+set -e
+set -x
+docker build -t tng-sdk-project .
