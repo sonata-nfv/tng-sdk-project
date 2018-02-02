@@ -32,6 +32,8 @@
 FROM python:3.6-slim
 MAINTAINER 5GTANGO
 
+RUN pip install pycodestyle
+
 ADD . /tng-sdk-project
 
 WORKDIR /tng-sdk-project
