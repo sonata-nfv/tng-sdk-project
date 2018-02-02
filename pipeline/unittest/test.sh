@@ -1,4 +1,3 @@
 #!/bin/bash
 set -e
-set -x
-docker run -i --rm tng-sdk-project pytest -v
+docker run -i --rm registry.sonata-nfv.eu:5000/tng-sdk-project pytest -v

@@ -158,12 +158,11 @@ class Workspace:
              }
         self.config['default_service_platform'] = 'sp1'
         self.config['validate_watchers'] = \
-            {os.path.join(self.workspace_root, self.config['projects_dir'])
-             : {'type': 'project',
+            {os.path.join(self.workspace_root, self.config['projects_dir']):
+             {'type': 'project',
                 'syntax': True,
                 'integrity': True,
-                'topology': True
-                }
+                'topology': True}
              }
 
     def create_dirs(self):
@@ -258,12 +257,11 @@ class Workspace:
         # 0.03
         if ws_config['version'] == "0.03":
             ws.config['validate_watchers'] = \
-                {os.path.join(ws.workspace_root, ws.config['projects_dir'])
-                 : {'type': 'project',
+                {os.path.join(ws.workspace_root, ws.config['projects_dir']):
+                 {'type': 'project',
                     'syntax': True,
                     'integrity': True,
-                    'topology': True
-                    }
+                    'topology': True}
                  }
 
         # 0.04
