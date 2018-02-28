@@ -1,0 +1,82 @@
+##
+## This is a sample network service descriptor
+## that comprises only the sample VNF
+## TODO: replace/modify this sample to a more comprehensive example
+
+descriptor_version: "1.0"
+
+vendor: "eu.sonata-nfv.service-descriptor"
+name: "sample-nsd"
+version: "0.2"
+author: "Name, Company, Contact"
+description: "A sample NSD"
+
+##
+## The various network functions this service
+## is composed of.
+##
+network_functions:
+  - vnf_id: "sample_vnf"
+    vnf_vendor: "eu.sonata-nfv"
+    vnf_name: "vnf-sample"
+    vnf_version: "0.1"
+
+##
+## The NS connection points to the 
+## outside world.
+##
+connection_points:
+  - id: "mgmt"
+    interface: "ipv4"
+    type: "management"
+  - id: "input"
+    interface: "ipv4"
+    type: "external"
+  - id: "output"
+    interface: "ipv4"
+    type: "external"
+
+##
+## The virtual links that interconnect
+## the different connections points.
+##
+virtual_links:
+  - id: "mgmt"
+    connectivity_type: "E-LAN"
+    connection_points_reference:
+      - "sample_vnf:mgmt"
+      - "mgmt"
+
+  - id: "input"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "input"
+      - "sample_vnf:input"
+
+  - id: "output"
+    connectivity_type: "E-Line"
+    connection_points_reference:
+      - "sample_vnf:output"
+      - "output"
+
+##
+## The forwarding graphs.
+##
+forwarding_graphs:
+  - fg_id: "ns:fg01"
+    number_of_endpoints: 2
+    number_of_virtual_links: 4
+    constituent_vnfs:
+      - "vnf_sample"
+    network_forwarding_paths:
+      - fp_id: "ns:fg01:fp01"
+        policy: "none"
+        connection_points:
+          - connection_point_ref: "input"
+            position: 1
+          - connection_point_ref: "sample_vnf:input"
+            position: 2
+          - connection_point_ref: "sample_vnf:output"
+            position: 3
+          - connection_point_ref: "output"
+            position: 4

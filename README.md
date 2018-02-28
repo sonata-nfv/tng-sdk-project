@@ -21,7 +21,7 @@ TODO
 
 ## Documentation
 
-TODO (e.g. link to wiki page)
+* [Documentation of SONATA's son-workspace](https://github.com/sonata-nfv/son-cli/wiki/son%E2%80%90workspace)
 
 ## Development
 
