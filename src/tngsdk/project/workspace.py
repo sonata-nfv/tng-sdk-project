@@ -36,6 +36,7 @@ import sys
 import os
 from os.path import expanduser
 import yaml
+import argparse
 
 from tngsdk.project.project import Project
 
@@ -362,11 +363,8 @@ class Workspace:
             and self.config == other.config
 
 
-def main():
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Generate new sonata workspaces and project layouts")
+def parse_args():
+    parser = argparse.ArgumentParser(description="Generate new sonata workspaces and project layouts")
 
     parser.add_argument(
         "--init",
@@ -375,8 +373,7 @@ def main():
 
     parser.add_argument(
         "--workspace",
-        help="location of existing (or new) workspace. "
-             "If not specified will assume '{}'"
+        help="location of existing (or new) workspace. If not specified will assume '{}'"
              .format(Workspace.DEFAULT_WORKSPACE_DIR),
         required=False)
 
@@ -391,7 +388,11 @@ def main():
         required=False,
         action="store_true")
 
-    args = parser.parse_args()
+    return parser, parser.parse_args()
+
+
+def main():
+    parser, args = parse_args()
 
     log_level = "INFO"
     if args.debug:
