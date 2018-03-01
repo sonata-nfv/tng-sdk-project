@@ -36,6 +36,7 @@ import sys
 import os
 from os.path import expanduser
 import yaml
+import argparse
 
 from tngsdk.project.project import Project
 
@@ -362,27 +363,13 @@ class Workspace:
             and self.config == other.config
 
 
-def main():
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Generate new sonata workspaces and project layouts")
+def parse_args_workspace():
+    parser = argparse.ArgumentParser(description="Create a new workspace")
 
     parser.add_argument(
-        "--init",
-        help="Create a new sonata workspace",
-        action="store_true")
-
-    parser.add_argument(
-        "--workspace",
-        help="location of existing (or new) workspace. "
-             "If not specified will assume '{}'"
-             .format(Workspace.DEFAULT_WORKSPACE_DIR),
-        required=False)
-
-    parser.add_argument(
-        "--project",
-        help="create a new project at the specified location",
+        "-w", "--workspace",
+        help="location of new workspace. If not specified will assume '{}'"
+              .format(Workspace.DEFAULT_WORKSPACE_DIR),
         required=False)
 
     parser.add_argument(
@@ -391,29 +378,24 @@ def main():
         required=False,
         action="store_true")
 
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+# for entry point tng-workspace; was as "tng-project --init" before
+def init_workspace():
+    args = parse_args_workspace()
 
     log_level = "INFO"
     if args.debug:
         log_level = "DEBUG"
         coloredlogs.install(level=log_level)
 
-    # Ensure that one argument is given (--init, --workspace or --project)
-    if not args.init and not args.workspace and not args.project:
-        parser.print_help()
-        return
-
-    # Ensure that argument --workspace is not alone
-    if not args.init and args.workspace and not args.project:
-        parser.print_help()
-        return
-
     # If workspace arg is not given, create a workspace in user home
-    if args.workspace is None:
+    if not args.workspace:
         ws_root = Workspace.DEFAULT_WORKSPACE_DIR
 
         # If a workspace already exists at user home, throw an error and quit
-        if args.init and os.path.isdir(ws_root):
+        if os.path.isdir(ws_root):
             print("A workspace already exists in {}. "
                   "Please specify a different location.\n"
                   .format(ws_root), file=sys.stderr)
@@ -422,33 +404,68 @@ def main():
     else:
         ws_root = expanduser(args.workspace)
 
-    if args.init:
-        ws = Workspace(ws_root, log_level=log_level)
-        if ws.check_ws_exists():
-            print("A workspace already exists at the "
-                  "specified location, exiting",
-                  file=sys.stderr)
-            exit(1)
+    # init workspace
+    ws = Workspace(ws_root, log_level=log_level)
+    if ws.check_ws_exists():
+        print("A workspace already exists at the specified location, exiting",
+              file=sys.stderr)
+        exit(1)
 
-        log.debug("Attempting to create a new workspace")
-        cwd = os.getcwd()
-        ws.create_dirs()
-        ws.create_files()
-        os.chdir(cwd)
-        log.debug("Workspace created.")
+    log.debug("Attempting to create a new workspace")
+    cwd = os.getcwd()
+    ws.create_dirs()
+    ws.create_files()
+    os.chdir(cwd)
+    log.debug("Workspace created.")
+
+
+def parse_args_project():
+    parser = argparse.ArgumentParser(description="Create new 5GTANGO project")
+    parser.add_argument("-p", "--project",
+                        help="create a new project at the specified location",
+                        required=True)
+
+    parser.add_argument(
+        "-w", "--workspace",
+        help="location of existing (or new) workspace. "
+             "If not specified will assume '{}'"
+             .format(Workspace.DEFAULT_WORKSPACE_DIR),
+        required=False)
+
+    parser.add_argument(
+        "--debug",
+        help="increases logging level to debug",
+        required=False,
+        action="store_true")
+
+    return parser, parser.parse_args()
+
+
+# for entry point tng-project; was "tng-project --project" before
+def create_project():
+    parser, args = parse_args_project()
+
+    log_level = "INFO"
+    if args.debug:
+        log_level = "DEBUG"
+        coloredlogs.install(level=log_level)
+
+    # use specified workspace or default
+    if args.workspace:
+        ws_root = expanduser(args.workspace)
     else:
-        ws = Workspace.__create_from_descriptor__(ws_root)
-        if not ws:
-            print("Could not find a SONATA workspace "
-                  "at the specified location",
-                  file=sys.stderr)
-            exit(1)
+        ws_root = Workspace.DEFAULT_WORKSPACE_DIR
 
-    if args.project is not None:
-        log.debug("Attempting to create a new project")
+    ws = Workspace.__create_from_descriptor__(ws_root)
+    if not ws:
+        print("Could not find a SONATA workspace at the specified location",
+              file=sys.stderr)
+        exit(1)
 
-        prj_root = os.path.expanduser(args.project)
-        proj = Project(ws, prj_root)
-        proj.create_prj()
+    log.debug("Attempting to create a new project")
 
-        log.debug("Project created.")
+    # create project
+    prj_root = os.path.expanduser(args.project)
+    proj = Project(ws, prj_root)
+    proj.create_prj()
+    log.debug("Project created.")
