@@ -60,6 +60,7 @@ setup(name='tngsdk.project',
       zip_safe=False,
       entry_points={
           'console_scripts': [
+              'tng-workspace=tngsdk.project.workspace:init_workspace',
               'tng-project=tngsdk.project.workspace:main'
           ],
       },

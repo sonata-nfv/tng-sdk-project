@@ -391,6 +391,59 @@ def parse_args():
     return parser, parser.parse_args()
 
 
+def parse_args_workspace():
+    parser = argparse.ArgumentParser(description="Generate a new 5GTANGO workspace")
+
+    parser.add_argument(
+        "--workspace",
+        help="location of new workspace. If not specified will assume '{}'".format(Workspace.DEFAULT_WORKSPACE_DIR),
+        required=False)
+
+    parser.add_argument(
+        "--debug",
+        help="increases logging level to debug",
+        required=False,
+        action="store_true")
+
+    return parser, parser.parse_args()
+
+
+# for entry point tng-workspace; was as "tng-project --init" before
+def init_workspace():
+    parser, args = parse_args_workspace()
+
+    log_level = "INFO"
+    if args.debug:
+        log_level = "DEBUG"
+        coloredlogs.install(level=log_level)
+
+    # If workspace arg is not given, create a workspace in user home
+    if not args.workspace:
+        ws_root = Workspace.DEFAULT_WORKSPACE_DIR
+
+        # If a workspace already exists at user home, throw an error and quit
+        if os.path.isdir(ws_root):
+            print("A workspace already exists in {}. Please specify a different location.\n"
+                  .format(ws_root), file=sys.stderr)
+            exit(1)
+
+    else:
+        ws_root = expanduser(args.workspace)
+
+    # init workspace
+    ws = Workspace(ws_root, log_level=log_level)
+    if ws.check_ws_exists():
+        print("A workspace already exists at the specified location, exiting", file=sys.stderr)
+        exit(1)
+
+    log.debug("Attempting to create a new workspace")
+    cwd = os.getcwd()
+    ws.create_dirs()
+    ws.create_files()
+    os.chdir(cwd)
+    log.debug("Workspace created.")
+
+
 def main():
     parser, args = parse_args()
 
