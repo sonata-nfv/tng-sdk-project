@@ -364,11 +364,12 @@ class Workspace:
 
 
 def parse_args_workspace():
-    parser = argparse.ArgumentParser(description="Generate a new 5GTANGO workspace")
+    parser = argparse.ArgumentParser(description="Create a new workspace")
 
     parser.add_argument(
         "-w", "--workspace",
-        help="location of new workspace. If not specified will assume '{}'".format(Workspace.DEFAULT_WORKSPACE_DIR),
+        help="location of new workspace. If not specified will assume '{}'"
+              .format(Workspace.DEFAULT_WORKSPACE_DIR),
         required=False)
 
     parser.add_argument(
@@ -395,7 +396,8 @@ def init_workspace():
 
         # If a workspace already exists at user home, throw an error and quit
         if os.path.isdir(ws_root):
-            print("A workspace already exists in {}. Please specify a different location.\n"
+            print("A workspace already exists in {}. "
+                  "Please specify a different location.\n"
                   .format(ws_root), file=sys.stderr)
             exit(1)
 
@@ -405,7 +407,8 @@ def init_workspace():
     # init workspace
     ws = Workspace(ws_root, log_level=log_level)
     if ws.check_ws_exists():
-        print("A workspace already exists at the specified location, exiting", file=sys.stderr)
+        print("A workspace already exists at the specified location, exiting",
+              file=sys.stderr)
         exit(1)
 
     log.debug("Attempting to create a new workspace")
@@ -417,12 +420,15 @@ def init_workspace():
 
 
 def parse_args_project():
-    parser = argparse.ArgumentParser(description="Create a new 5GTANGO project layout")
-    parser.add_argument("-p", "--project", help="create a new project at the specified location", required=True)
+    parser = argparse.ArgumentParser(description="Create new 5GTANGO project")
+    parser.add_argument("-p", "--project",
+                        help="create a new project at the specified location",
+                        required=True)
 
     parser.add_argument(
         "-w", "--workspace",
-        help="location of existing (or new) workspace. If not specified will assume '{}'"
+        help="location of existing (or new) workspace. "
+             "If not specified will assume '{}'"
              .format(Workspace.DEFAULT_WORKSPACE_DIR),
         required=False)
 
@@ -452,7 +458,8 @@ def create_project():
 
     ws = Workspace.__create_from_descriptor__(ws_root)
     if not ws:
-        print("Could not find a SONATA workspace at the specified location", file=sys.stderr)
+        print("Could not find a SONATA workspace at the specified location",
+              file=sys.stderr)
         exit(1)
 
     log.debug("Attempting to create a new project")
