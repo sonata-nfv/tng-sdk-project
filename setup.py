@@ -61,7 +61,7 @@ setup(name='tngsdk.project',
       entry_points={
           'console_scripts': [
               'tng-workspace=tngsdk.project.workspace:init_workspace',
-              'tng-project=tngsdk.project.workspace:main'
+              'tng-project=tngsdk.project.workspace:create_project'
           ],
       },
       test_suite='tngsdk',
