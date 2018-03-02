@@ -15,9 +15,21 @@ $ python setup.py install
 
 ## Usage
 
+To start working, you need a workspace that holds your configuration files. The default location is `~/.son-workspace/`, but it may be at any location and there can also be multiple workspaces.
+
 ```bash
-TODO
+$ tng-workspace       # initializes a new workspace at the default location
+$ tng-workspace --workspace path/to/workspace     # inits a workspace at a custom location
 ```
+
+Once you have a workspace, you can create projects with the `tng-project` command:
+
+```bash
+$ tng-project -p path/to/project       # creates a new project at the specified path
+```
+
+The `--workspace` option allows to specify a workspace at a custom location. Otherwise, the workspace at the default location is used.
+For both `tng-workspace` and `tng-project` the option `--debug` makes the output more verbose.
 
 ## Documentation
 
@@ -43,8 +55,8 @@ You can also run the test manually on your local machine. To do so, you need to 
 
 ```bash
 $ pytest -v
+$ pycodestyle .
 ```
-
 
 ## License
 
