@@ -89,14 +89,15 @@ class Project:
                 'description': 'Some description about this sample'
             },
             'descriptor_extension':
-                self._workspace.default_descriptor_extension
+                self._workspace.default_descriptor_extension,
+            'files': []
         }
 
     def create_prj(self):
         log.info('Creating project at {}'.format(self._prj_root))
 
         self._create_dirs()
-        self._create_prj_stub()
+        self._write_prj_yml()
 
     def _create_dirs(self):
         """
@@ -148,24 +149,8 @@ class Project:
         """
         self._create_sample('nsd', self.nsd_root)
 
-    def _create_prj_stub(self):
-        """
-        Creates the project descriptor (project.yml)
-        :return:
-        """
-        self._prj_config = {
-            'version': self.CONFIG_VERSION,
-            'package':  {
-                'name': 'sonata-project-sample',
-                'vendor': 'eu.sonata-nfv.package',
-                'version': '0.1',
-                'maintainer': 'Name, Company, Contact',
-                'description': 'Some description about this sample'
-            },
-            'descriptor_extension':
-                self._workspace.default_descriptor_extension
-        }
-
+    # writes project descriptor to file (project.yml)
+    def _write_prj_yml(self):
         prj_path = os.path.join(self._prj_root, Project.__descriptor_name__)
         with open(prj_path, 'w') as prj_file:
             prj_file.write(yaml.dump(self._prj_config,
@@ -218,8 +203,8 @@ class Project:
 
         func(path)
 
-    @staticmethod
-    def _create_sample_fsm(path):
+    # TODO: add created sample files to project.yml
+    def _create_sample_fsm(self, path):
         d = {
             'name': 'sample fsm',
             'id': 'com.sonata.fsm.sample',
@@ -229,8 +214,12 @@ class Project:
         with open(prj_path, 'w') as prj_file:
             prj_file.write(yaml.dump(d))
 
-    @staticmethod
-    def _create_sample_ssm(path):
+        # add to project.yml
+        file = {'path': prj_path, 'type': 'application/vnd.5gtango.fsm',
+                'tags': ['eu.5gtango', 'eu.sonata']}
+        self._prj_config['files'].append(file)
+
+    def _create_sample_ssm(self, path):
         d = {
             'name': 'sample ssm',
             'id': 'com.sonata.ssm.sample',
@@ -240,8 +229,13 @@ class Project:
         with open(prj_path, 'w') as prj_file:
             prj_file.write(yaml.dump(d))
 
-    @staticmethod
-    def _create_sample_pattern(path):
+        # add to project.yml
+        file = {'path': prj_path, 'type': 'application/vnd.5gtango.ssm',
+                'tags': ['eu.5gtango', 'eu.sonata']}
+        self._prj_config['files'].append(file)
+
+    # TODO: what is this? do we need it in tango? what's the MIME type?
+    def _create_sample_pattern(self, path):
         d = {
             'name': 'sample pattern',
             'id': 'com.sonata.pattern.sample',
@@ -251,8 +245,12 @@ class Project:
         with open(prj_path, 'w') as prj_file:
             prj_file.write(yaml.dump(d))
 
-    @staticmethod
-    def _create_sample_vnf(path):
+        # add to project.yml
+        file = {'path': prj_path, 'type': 'application/vnd.5gtango.pattern',
+                'tags': ['eu.5gtango', 'eu.sonata']}
+        self._prj_config['files'].append(file)
+
+    def _create_sample_vnf(self, path):
         """
         Create a sample VNF descriptor
         (to be evoked upon project creation)
@@ -268,13 +266,23 @@ class Project:
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, os.path.join(path, sample_vnfd))
 
+        # add to project.yml
+        file = {'path': src_path, 'type': 'application/vnd.5gtango.vnfd',
+                'tags': ['eu.5gtango']}
+        self._prj_config['files'].append(file)
+
         # Copy associated sample VM image
         src_path = os.path.join('samples', sample_image)
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, os.path.join(path, sample_image))
 
-    @staticmethod
-    def _create_sample_nsd(path):
+        # FIXME: what's the MIME tpye?
+        # add to project.yml
+        file = {'path': src_path, 'type': 'application/vnd.5gtango.fsm',
+                'tags': ['eu.5gtango']}
+        self._prj_config['files'].append(file)
+
+    def _create_sample_nsd(self, path):
         """
         Create a sample NS descriptor
         (to be evoked upon project creation)
@@ -288,6 +296,11 @@ class Project:
         src_path = os.path.join('samples', sample_nsd)
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, os.path.join(path, sample_nsd))
+
+        # add to project.yml
+        file = {'path': src_path, 'type': 'application/vnd.5gtango.nsd',
+                'tags': ['eu.5gtango']}
+        self._prj_config['files'].append(file)
 
     @staticmethod
     def __is_valid__(project):

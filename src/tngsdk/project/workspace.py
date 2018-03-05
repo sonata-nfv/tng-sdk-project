@@ -469,3 +469,6 @@ def create_project():
     proj = Project(ws, prj_root)
     proj.create_prj()
     log.debug("Project created.")
+
+
+create_project()

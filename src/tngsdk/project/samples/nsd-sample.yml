@@ -1,7 +1,6 @@
 ##
 ## This is a sample network service descriptor
 ## that comprises only the sample VNF
-## TODO: replace/modify this sample to a more comprehensive example
 
 descriptor_version: "1.0"
 
