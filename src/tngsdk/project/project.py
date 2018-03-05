@@ -105,7 +105,7 @@ class Project:
         :return:
         """
         directories = {'sources', 'dependencies', 'deployment'}
-        src_subdirs = {'ssm', 'pattern', 'vnf', 'nsd'}
+        src_subdirs = {'vnfd', 'nsd'}
 
         # Check if dir exists
         if os.path.isdir(self._prj_root):
@@ -120,34 +120,58 @@ class Project:
             os.makedirs(path, exist_ok=True)
 
         src_path = os.path.join(self._prj_root, 'sources')
-        for d in src_subdirs:
-            if d == 'nsd':
-                path = os.path.join(src_path, d)
-            else:
-                path = os.path.join(src_path, d, 'sample')
-            os.makedirs(path, exist_ok=True)
-            self._create_sample(d, path)
+        vnfd_path = os.path.join(src_path, 'vnfd/sample')
+        nsd_path = os.path.join(src_path, 'nsd')
+        os.makedirs(vnfd_path, exist_ok=True)
+        os.makedirs(nsd_path, exist_ok=True)
+        self._create_vnfd(vnfd_path)
+        self._create_nsd(nsd_path)
 
-        self._create_vnf_dir()
-        self._create_nsd_dir()
+    # create directory and sample VNFD
+    def _create_vnfd(self, path):
+        sample_vnfd = 'vnfd-sample.yml'
+        vnfd_path = os.path.join(path, sample_vnfd)
+        sample_image = 'sample_docker'
+        image_path = os.path.join(path, sample_image)
+        rp = __name__
 
-    def _create_vnf_dir(self, name='sample'):
-        """
-        Function to create a new VNF inside project source.
-        :param name:The VNF name
-        """
-        vnf_subdirs = {'fsm'}
-        vnf_path = os.path.join(self.vnfd_root, name)
-        self._create_sample('vnf', vnf_path)
-        for d in vnf_subdirs:
-            path = os.path.join(vnf_path, d)
-            os.makedirs(path, exist_ok=False)
+        # Copy sample VNF descriptor
+        src_path = os.path.join('samples', sample_vnfd)
+        srcfile = pkg_resources.resource_filename(rp, src_path)
+        shutil.copyfile(srcfile, vnfd_path)
 
-    def _create_nsd_dir(self):
-        """
-        Function to create a new NSD inside project source.
-        """
-        self._create_sample('nsd', self.nsd_root)
+        # add to project.yml
+        file = {'path': vnfd_path, 'type': 'application/vnd.5gtango.vnfd',
+                'tags': ['eu.5gtango']}
+        self._prj_config['files'].append(file)
+
+        # Copy associated sample VM image
+        src_path = os.path.join('samples', sample_image)
+        srcfile = pkg_resources.resource_filename(rp, src_path)
+        shutil.copyfile(srcfile, image_path)
+
+        # FIXME: what's the MIME tpye?
+        # add to project.yml
+        file = {'path': image_path, 'type': 'TODO:image',
+                'tags': ['eu.5gtango']}
+        self._prj_config['files'].append(file)
+
+    # create NSD
+    def _create_nsd(self, path):
+        #path = self.nsd_root
+        sample_nsd = 'nsd-sample.yml'
+        nsd_path = os.path.join(path, sample_nsd)
+        rp = __name__
+
+        # Copy sample NS descriptor
+        src_path = os.path.join('samples', sample_nsd)
+        srcfile = pkg_resources.resource_filename(rp, src_path)
+        shutil.copyfile(srcfile, nsd_path)
+
+        # add to project.yml
+        file = {'path': nsd_path, 'type': 'application/vnd.5gtango.nsd',
+                'tags': ['eu.5gtango']}
+        self._prj_config['files'].append(file)
 
     # writes project descriptor to file (project.yml)
     def _write_prj_yml(self):
@@ -155,152 +179,6 @@ class Project:
         with open(prj_path, 'w') as prj_file:
             prj_file.write(yaml.dump(self._prj_config,
                                      default_flow_style=False))
-
-    def get_ns_descriptor(self):
-        """
-        Obtain the file list of NS descriptors
-        :return:
-        """
-        nsd_list = [os.path.join(self.nsd_root, file)
-                    for file in os.listdir(self.nsd_root)
-                    if os.path.isfile(os.path.join(self.nsd_root, file)) and
-                    file.endswith(self.descriptor_extension)]
-
-        if len(nsd_list) == 0:
-            log.error("Project does not contain a NS Descriptor")
-            return
-
-        if len(nsd_list) != 1:
-            log.warning("Project contains more than one NS Descriptor")
-
-        return nsd_list
-
-    def get_vnf_descriptors(self):
-        """
-        Obtain the file list of VNF descriptors
-        :return:
-        """
-        vnfd_list = []
-        for root, dirs, files in os.walk(self.vnfd_root):
-            for file in files:
-                if file.endswith(self.descriptor_extension):
-                    vnfd_list.append(os.path.join(root, file))
-        return vnfd_list
-
-    def _create_sample(self, prj_type, path):
-        switcher = {
-            # 'fsm': self._create_sample_fsm,
-            'ssm': self._create_sample_ssm,
-            'pattern': self._create_sample_pattern,
-            'vnf': self._create_sample_vnf,
-            'nsd': self._create_sample_nsd
-        }
-        func = switcher.get(prj_type)
-        if func is None:
-            log.error("Could not create sample for "
-                      "" + prj_type + ", unknown project type")
-            return
-
-        func(path)
-
-    # TODO: add created sample files to project.yml
-    def _create_sample_fsm(self, path):
-        d = {
-            'name': 'sample fsm',
-            'id': 'com.sonata.fsm.sample',
-            'version': '0.1'
-        }
-        prj_path = os.path.join(path, 'fsm.yml')
-        with open(prj_path, 'w') as prj_file:
-            prj_file.write(yaml.dump(d))
-
-        # add to project.yml
-        file = {'path': prj_path, 'type': 'application/vnd.5gtango.fsm',
-                'tags': ['eu.5gtango', 'eu.sonata']}
-        self._prj_config['files'].append(file)
-
-    def _create_sample_ssm(self, path):
-        d = {
-            'name': 'sample ssm',
-            'id': 'com.sonata.ssm.sample',
-            'version': '0.1'
-        }
-        prj_path = os.path.join(path, 'ssm.yml')
-        with open(prj_path, 'w') as prj_file:
-            prj_file.write(yaml.dump(d))
-
-        # add to project.yml
-        file = {'path': prj_path, 'type': 'application/vnd.5gtango.ssm',
-                'tags': ['eu.5gtango', 'eu.sonata']}
-        self._prj_config['files'].append(file)
-
-    # TODO: what is this? do we need it in tango? what's the MIME type?
-    def _create_sample_pattern(self, path):
-        d = {
-            'name': 'sample pattern',
-            'id': 'com.sonata.pattern.sample',
-            'version': '0.1'
-        }
-        prj_path = os.path.join(path, 'patterm.yml')
-        with open(prj_path, 'w') as prj_file:
-            prj_file.write(yaml.dump(d))
-
-        # add to project.yml
-        file = {'path': prj_path, 'type': 'application/vnd.5gtango.pattern',
-                'tags': ['eu.5gtango', 'eu.sonata']}
-        self._prj_config['files'].append(file)
-
-    def _create_sample_vnf(self, path):
-        """
-        Create a sample VNF descriptor
-        (to be evoked upon project creation)
-
-        :param path: The VNF sample directory
-        """
-        sample_vnfd = 'vnfd-sample.yml'
-        sample_image = 'sample_docker'
-        rp = __name__
-
-        # Copy sample VNF descriptor
-        src_path = os.path.join('samples', sample_vnfd)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, os.path.join(path, sample_vnfd))
-
-        # add to project.yml
-        file = {'path': src_path, 'type': 'application/vnd.5gtango.vnfd',
-                'tags': ['eu.5gtango']}
-        self._prj_config['files'].append(file)
-
-        # Copy associated sample VM image
-        src_path = os.path.join('samples', sample_image)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, os.path.join(path, sample_image))
-
-        # FIXME: what's the MIME tpye?
-        # add to project.yml
-        file = {'path': src_path, 'type': 'application/vnd.5gtango.fsm',
-                'tags': ['eu.5gtango']}
-        self._prj_config['files'].append(file)
-
-    def _create_sample_nsd(self, path):
-        """
-        Create a sample NS descriptor
-        (to be evoked upon project creation)
-
-        :param path: The NSD sample directory
-        """
-        sample_nsd = 'nsd-sample.yml'
-        rp = __name__
-
-        # Copy sample NS descriptor
-        src_path = os.path.join('samples', sample_nsd)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, os.path.join(path, sample_nsd))
-
-        # add to project.yml
-        file = {'path': src_path, 'type': 'application/vnd.5gtango.nsd',
-                'tags': ['eu.5gtango']}
-        self._prj_config['files'].append(file)
 
     # adds a file to the project: detects type and adds to project.yml
     def add_file(self, file):
@@ -311,8 +189,8 @@ class Project:
             yml_file = yaml.load(file)
             schema_url = yml_file["descriptor_schema"]
             if schema_url:
-                schema = schema_url.split("/")[-1]
-                # TODO: maybe easier to simply include MIME type in schema and retrieve it from there instead of somehow reconstructing it from the url? but requires internet conn...
+                pass
+                # TODO: get MIME type from workspace config
 
             else:
                 pass        # TODO: use plain text
