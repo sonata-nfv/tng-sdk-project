@@ -302,6 +302,24 @@ class Project:
                 'tags': ['eu.5gtango']}
         self._prj_config['files'].append(file)
 
+    # adds a file to the project: detects type and adds to project.yml
+    def add_file(self, file):
+        name, extension = os.path.splitext(file)
+
+        # check yml files to detect and classify 5GTANGO descriptors
+        if extension == ".yml" or extension == ".yaml":
+            yml_file = yaml.load(file)
+            schema_url = yml_file["descriptor_schema"]
+            if schema_url:
+                schema = schema_url.split("/")[-1]
+                # TODO: maybe easier to simply include MIME type in schema and retrieve it from there instead of somehow reconstructing it from the url? but requires internet conn...
+
+            else:
+                pass        # TODO: use plain text
+
+        else:
+            pass    # TODO: try to use python-magic or ask user
+
     @staticmethod
     def __is_valid__(project):
         """Checks if a given project is valid"""
