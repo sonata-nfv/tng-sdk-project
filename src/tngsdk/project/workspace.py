@@ -64,7 +64,7 @@ class Workspace:
             if log_level:
                 self.config['log_level'] = log_level
 
-        coloredlogs.install(level=self.config['log_level'])
+        # coloredlogs.install(level=self.config['log_level'])
 
     @property
     def workspace_root(self):
@@ -433,21 +433,23 @@ def parse_args_project():
                         help="create a new project at the specified location",
                         required=True)
 
-    parser.add_argument(
-        "-w", "--workspace",
-        help="location of existing (or new) workspace. "
-             "If not specified will assume '{}'"
-             .format(Workspace.DEFAULT_WORKSPACE_DIR),
-        required=False)
+    parser.add_argument("-w", "--workspace",
+                        help="location of existing (or new) workspace. "
+                        "If not specified will assume '{}'"
+                        .format(Workspace.DEFAULT_WORKSPACE_DIR),
+                        required=False)
 
-    parser.add_argument(
-        "--debug",
-        help="increases logging level to debug",
-        required=False,
-        action="store_true")
+    parser.add_argument("--debug",
+                        help="increases logging level to debug",
+                        required=False,
+                        action="store_true")
 
     # subparsers for add/remove
-    # TODO
+    # TODO: use subparser for "add"; don't use positional argument
+    parser.add_argument("--add",
+                        help="Add file to project",
+                        required=False,
+                        default=None)
 
     return parser, parser.parse_args()
 
@@ -456,10 +458,10 @@ def parse_args_project():
 def create_project():
     parser, args = parse_args_project()
 
-    log_level = "INFO"
     if args.debug:
-        log_level = "DEBUG"
-        coloredlogs.install(level=log_level)
+        coloredlogs.install(level='DEBUG')
+    else:
+        coloredlogs.install(level='INFO')
 
     # use specified workspace or default
     if args.workspace:
@@ -473,10 +475,17 @@ def create_project():
               file=sys.stderr)
         exit(1)
 
-    log.debug("Attempting to create a new project")
-
-    # create project
     prj_root = os.path.expanduser(args.project)
-    proj = Project(ws, prj_root)
-    proj.create_prj()
-    log.debug("Project created.")
+
+    if args.add:
+        # load project
+        log.debug("Attempting to add file {}".format(args.add))
+        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj.add_file(args.add)
+
+    else:
+        # create project
+        log.debug("Attempting to create a new project")
+        proj = Project(ws, prj_root)
+        proj.create_prj()
+        log.debug("Project created.")

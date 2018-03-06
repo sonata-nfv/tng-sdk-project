@@ -51,7 +51,6 @@ class Project:
     __descriptor_name__ = 'project.yml'
 
     def __init__(self, workspace, prj_root, config=None):
-        coloredlogs.install(level=workspace.log_level)
         self._prj_root = prj_root
         self._workspace = workspace
         if config:
@@ -184,8 +183,8 @@ class Project:
             prj_file.write(yaml.dump(self._prj_config,
                                      default_flow_style=False))
 
-    # adds a file to the project: detects type and adds to project.yml
-    def add_file(self, file):
+    # detects and returns MIME type of specified file
+    def mime_type(self, file):
         name, extension = os.path.splitext(file)
 
         # check yml files to detect and classify 5GTANGO descriptors
@@ -202,9 +201,23 @@ class Project:
         # for non-yml files determine the type using python-magic
         else:
             type = magic.from_file(file, mime=True)
+            # TODO: ask user if unsure
 
         log.debug('Detected MIME type: {}'.format(type))
-        # TODO: add to project yaml
+        return type
+
+    # adds a file to the project: detects type and adds to project.yml
+    def add_file(self, file_path):
+        type = self.mime_type(file_path)
+
+        # add to project.yml
+        file = {'path': file_path, 'type': type, 'tags': ['eu.5gtango']}
+        if file in self._prj_config['files']:
+            log.warning('{} is already in project.yml.'.format(file_path))
+        else:
+            self._prj_config['files'].append(file)
+            self._write_prj_yml()
+            log.info('Added {} to project.yml'.format(file_path))
 
     @staticmethod
     def __is_valid__(project):
