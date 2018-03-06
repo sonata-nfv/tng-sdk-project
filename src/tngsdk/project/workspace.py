@@ -444,10 +444,14 @@ def parse_args_project():
                         required=False,
                         action="store_true")
 
-    # subparsers for add/remove
-    # TODO: use subparser for "add"; don't use positional argument
+    # TODO: use subparser for "add/remove" instead of "--add/--remove"
     parser.add_argument("--add",
                         help="Add file to project",
+                        required=False,
+                        default=None)
+
+    parser.add_argument("--remove",
+                        help="Remove file from project",
                         required=False,
                         default=None)
 
@@ -478,10 +482,16 @@ def create_project():
     prj_root = os.path.expanduser(args.project)
 
     if args.add:
-        # load project
+        # load project and add file to project.yml
         log.debug("Attempting to add file {}".format(args.add))
         proj = Project.__create_from_descriptor__(ws, prj_root)
         proj.add_file(args.add)
+
+    elif args.remove:
+        # load project and remove file from project.yml
+        log.debug("Attempting to remove file {}".format(args.remove))
+        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj.remove_file(args.remove)
 
     else:
         # create project

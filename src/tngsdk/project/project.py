@@ -143,22 +143,13 @@ class Project:
         src_path = os.path.join('samples', sample_vnfd)
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, vnfd_path)
-
-        # add to project.yml
-        file = {'path': vnfd_path, 'type': 'application/vnd.5gtango.vnfd',
-                'tags': ['eu.5gtango']}
-        self._prj_config['files'].append(file)
+        self.add_file(vnfd_path)
 
         # Copy associated sample VM image
         src_path = os.path.join('samples', sample_image)
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, image_path)
-
-        # FIXME: what's the MIME tpye?
-        # add to project.yml
-        file = {'path': image_path, 'type': 'TODO:image',
-                'tags': ['eu.5gtango']}
-        self._prj_config['files'].append(file)
+        self.add_file(image_path)
 
     # create NSD
     def _create_nsd(self, path):
@@ -170,11 +161,7 @@ class Project:
         src_path = os.path.join('samples', sample_nsd)
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, nsd_path)
-
-        # add to project.yml
-        file = {'path': nsd_path, 'type': 'application/vnd.5gtango.nsd',
-                'tags': ['eu.5gtango']}
-        self._prj_config['files'].append(file)
+        self.add_file(nsd_path)
 
     # writes project descriptor to file (project.yml)
     def _write_prj_yml(self):
@@ -189,14 +176,15 @@ class Project:
 
         # check yml files to detect and classify 5GTANGO descriptors
         if extension == ".yml" or extension == ".yaml":
-            yml_file = yaml.load(file)
-            schema_url = yml_file["descriptor_schema"]
-            if schema_url:
-                type = self.type_mapping[schema_url]
-            else:
-                log.warning('Could not detect MIME type of {}. Using text/yaml'
-                            .format(file))
-                type = 'text/yaml'
+            with open(file, 'r') as yml_file:
+                yml_file = yaml.load(yml_file)
+                schema_url = yml_file["descriptor_schema"]
+                if schema_url:
+                    type = self.type_mapping[schema_url]
+                else:
+                    log.warning('Could not detect MIME type of {}. Using text/yaml'
+                                .format(file))
+                    type = 'text/yaml'
 
         # for non-yml files determine the type using python-magic
         else:
@@ -218,6 +206,16 @@ class Project:
             self._prj_config['files'].append(file)
             self._write_prj_yml()
             log.info('Added {} to project.yml'.format(file_path))
+
+    # removes a file from the project
+    def remove_file(self, file_path):
+        for f in self._prj_config['files']:
+            if f['path'] == file_path:
+                self._prj_config['files'].remove(f)
+                self._write_prj_yml()
+                log.info('Removed {} from project.yml'.format(file_path))
+                return
+        log.warning('{} is not in project.yml'.format(file_path))
 
     @staticmethod
     def __is_valid__(project):
