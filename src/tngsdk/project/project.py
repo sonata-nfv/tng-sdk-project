@@ -82,8 +82,8 @@ class Project:
         self._prj_config = {
             'version': self.CONFIG_VERSION,
             'package': {
-                'name': 'sonata-project-sample',
-                'vendor': 'eu.sonata-nfv.package',
+                'name': '5gtango-project-sample',
+                'vendor': 'eu.5gtango',
                 'version': '0.1',
                 'maintainer': 'Name, Company, Contact',
                 'description': 'Some description about this sample'

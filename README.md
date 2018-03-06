@@ -15,7 +15,7 @@ $ python setup.py install
 
 ## Usage
 
-To start working, you need a workspace that holds your configuration files. The default location is `~/.son-workspace/`, but it may be at any location and there can also be multiple workspaces.
+To start working, you need a workspace that holds your configuration files. The default location is `~/.tng-workspace/`, but it may be at any location and there can also be multiple workspaces.
 
 ```bash
 $ tng-workspace       # initializes a new workspace at the default location

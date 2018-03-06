@@ -120,7 +120,7 @@ class CreateWorkspaceTests(unittest.TestCase):
             'catalogues_dir': 'catalogues',
             'configuration_dir': 'configuration',
             'projects_dir': 'projects',
-            'validate_watch': '~/.son-workspace/projects'
+            'validate_watch': '~/.tng-workspace/projects'
         }
 
         # Feed this descriptor as a config file
@@ -165,7 +165,7 @@ class CreateWorkspaceTests(unittest.TestCase):
         m_yaml.dump.return_value = None
 
         # Call function
-        cfg_d = ws.write_ws_descriptor()
+        cfg_d = ws.create_files()
 
         # Assure that config file would be writen with the correct location
         configfile = os.path.join(ws.workspace_root,
