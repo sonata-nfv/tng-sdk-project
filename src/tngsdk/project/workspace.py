@@ -203,13 +203,15 @@ class Workspace:
 
         # write project config (schema-MIME mapping)
         mapping = {
-            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/function-descriptor/vnfd-schema.yml':
+            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/'
+            'function-descriptor/vnfd-schema.yml':
                 'application/vnd.5gtango.vnfd',
-            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml': 'application/vnd.5gtango.nsd'
+            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/'
+            'service-descriptor/nsd-schema.yml': 'application/vnd.5gtango.nsd'
         }
-        config_path = os.path.join(self.workspace_root, 'projects', 'config.yml')
-        with open(config_path, 'w') as config_file:
-            yaml.dump(mapping, config_file, default_flow_style=False)
+        conf_path = os.path.join(self.workspace_root, 'projects', 'config.yml')
+        conf_file = open(conf_path, 'w')
+        yaml.dump(mapping, conf_file, default_flow_style=False)
 
         return cfg_d
 

@@ -182,8 +182,8 @@ class Project:
                 if schema_url:
                     type = self.type_mapping[schema_url]
                 else:
-                    log.warning('Could not detect MIME type of {}. Using text/yaml'
-                                .format(file))
+                    log.warning('Could not detect MIME type of {}. '
+                                'Using text/yaml'.format(file))
                     type = 'text/yaml'
 
         # for non-yml files determine the type using python-magic
