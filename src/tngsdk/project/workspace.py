@@ -136,6 +136,8 @@ class Workspace:
         self.config['configuration_dir'] = 'configuration'
         self.config['platforms_dir'] = 'platforms'
         self.config['projects_dir'] = 'projects'
+        self.config['projects_config'] = os.path.join(self.workspace_root,
+                                                      'projects', 'config.yml')
 
         self.config['schemas_local_master'] = Workspace.DEFAULT_SCHEMAS_DIR
         self.config['schemas_remote_master'] = \
@@ -205,7 +207,7 @@ class Workspace:
                 'application/vnd.5gtango.vnfd',
             'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml': 'application/vnd.5gtango.nsd'
         }
-        config_path = os.path.join(self.workspace_root, 'projects', 'mime-config.yml')
+        config_path = os.path.join(self.workspace_root, 'projects', 'config.yml')
         with open(config_path, 'w') as config_file:
             yaml.dump(mapping, config_file, default_flow_style=False)
 
@@ -443,6 +445,9 @@ def parse_args_project():
         help="increases logging level to debug",
         required=False,
         action="store_true")
+
+    # subparsers for add/remove
+    # TODO
 
     return parser, parser.parse_args()
 

@@ -3,3 +3,4 @@ setuptools
 pytest
 pyaml
 coloredlogs
+python-magic-bin

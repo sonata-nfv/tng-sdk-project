@@ -37,6 +37,7 @@ import coloredlogs
 import yaml
 import shutil
 import pkg_resources
+import magic
 
 
 log = logging.getLogger(__name__)
@@ -57,6 +58,10 @@ class Project:
             self._prj_config = config
         else:
             self.load_default_config()
+
+        # get config from workspace for URL->MIME mapping
+        with open(workspace.config["projects_config"], 'r') as config_file:
+            self.type_mapping = yaml.load(config_file)
 
     @property
     def project_root(self):
@@ -188,14 +193,18 @@ class Project:
             yml_file = yaml.load(file)
             schema_url = yml_file["descriptor_schema"]
             if schema_url:
-                pass
-                # TODO: get MIME type from workspace config
-
+                type = self.type_mapping[schema_url]
             else:
-                pass        # TODO: use plain text
+                log.warning('Could not detect MIME type of {}. Using text/yaml'
+                            .format(file))
+                type = 'text/yaml'
 
+        # for non-yml files determine the type using python-magic
         else:
-            pass    # TODO: try to use python-magic or ask user
+            type = magic.from_file(file, mime=True)
+
+        log.debug('Detected MIME type: {}'.format(type))
+        # TODO: add to project yaml
 
     @staticmethod
     def __is_valid__(project):
