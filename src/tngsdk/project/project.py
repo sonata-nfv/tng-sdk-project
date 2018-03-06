@@ -33,11 +33,11 @@
 import sys
 import os
 import logging
-import coloredlogs
 import yaml
 import shutil
 import pkg_resources
 import magic
+import glob
 
 
 log = logging.getLogger(__name__)
@@ -170,6 +170,14 @@ class Project:
             prj_file.write(yaml.dump(self._prj_config,
                                      default_flow_style=False))
 
+    # resolves wildcards by calling add/remove_file for each file
+    def resolve_wildcards(self, path, add=False, remove=False):
+        for f in glob.glob(path):
+            if add:
+                self.add_file(f)
+            if remove:
+                self.remove_file(f)
+
     # detects and returns MIME type of specified file
     def mime_type(self, file):
         name, extension = os.path.splitext(file)
@@ -196,6 +204,12 @@ class Project:
 
     # adds a file to the project: detects type and adds to project.yml
     def add_file(self, file_path):
+        # resolve wildcards
+        if '*' in file_path:
+            log.debug('Attempting to resolve wildcard in {}'.format(file_path))
+            self.resolve_wildcards(file_path, add=True)
+            return
+
         type = self.mime_type(file_path)
 
         # add to project.yml
@@ -209,6 +223,12 @@ class Project:
 
     # removes a file from the project
     def remove_file(self, file_path):
+        # resolve wildcards
+        if '*' in file_path:
+            log.debug('Attempting to resolve wildcard in {}'.format(file_path))
+            self.resolve_wildcards(file_path, remove=True)
+            return
+
         for f in self._prj_config['files']:
             if f['path'] == file_path:
                 self._prj_config['files'].remove(f)

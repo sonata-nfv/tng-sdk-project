@@ -22,10 +22,12 @@ $ tng-workspace       # initializes a new workspace at the default location
 $ tng-workspace --workspace path/to/workspace     # inits a workspace at a custom location
 ```
 
-Once you have a workspace, you can create projects with the `tng-project` command:
+Once you have a workspace, you can create projects with the `tng-project` command. You can also add or remove files from the project (wildcards allowed).
 
 ```bash
-$ tng-project -p path/to/project       # creates a new project at the specified path
+$ tng-project -p path/to/project                # creates a new project at the specified path
+$ tng-project -p path/to/project --add file1    # adds file1 to the project.yml
+$ tng-project -p path/to/project --remove file1 # removes file1 from the project.yml
 ```
 
 The `--workspace` option allows to specify a workspace at a custom location. Otherwise, the workspace at the default location is used.
