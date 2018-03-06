@@ -120,7 +120,7 @@ class Project:
             os.makedirs(path, exist_ok=True)
 
         src_path = os.path.join(self._prj_root, 'sources')
-        vnfd_path = os.path.join(src_path, 'vnfd/sample')
+        vnfd_path = os.path.join(src_path, 'vnfd')
         nsd_path = os.path.join(src_path, 'nsd')
         os.makedirs(vnfd_path, exist_ok=True)
         os.makedirs(nsd_path, exist_ok=True)
@@ -158,7 +158,6 @@ class Project:
 
     # create NSD
     def _create_nsd(self, path):
-        #path = self.nsd_root
         sample_nsd = 'nsd-sample.yml'
         nsd_path = os.path.join(path, sample_nsd)
         rp = __name__
