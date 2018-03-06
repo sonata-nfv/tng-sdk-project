@@ -446,7 +446,6 @@ def parse_args_project():
                         required=False,
                         action="store_true")
 
-    # TODO: use subparser for "add/remove" instead of "--add/--remove"
     parser.add_argument("--add",
                         help="Add file to project",
                         required=False,
