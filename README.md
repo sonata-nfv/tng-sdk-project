@@ -27,6 +27,7 @@ Once you have a workspace, you can create projects with the `tng-project` comman
 ```bash
 $ tng-project -p path/to/project                # creates a new project at the specified path
 $ tng-project -p path/to/project --add file1    # adds file1 to the project.yml
+$ tng-project -p path/to/project --add file1 --type text/plain  # adds file1 with explicit MIME type
 $ tng-project -p path/to/project --remove file1 # removes file1 from the project.yml
 ```
 
