@@ -33,10 +33,11 @@
 import sys
 import os
 import logging
-import coloredlogs
 import yaml
 import shutil
 import pkg_resources
+import glob
+import mimetypes
 
 
 log = logging.getLogger(__name__)
@@ -50,13 +51,16 @@ class Project:
     __descriptor_name__ = 'project.yml'
 
     def __init__(self, workspace, prj_root, config=None):
-        coloredlogs.install(level=workspace.log_level)
         self._prj_root = prj_root
         self._workspace = workspace
         if config:
             self._prj_config = config
         else:
             self.load_default_config()
+
+        # get config from workspace for URL->MIME mapping
+        with open(workspace.config["projects_config"], 'r') as config_file:
+            self.type_mapping = yaml.load(config_file)
 
     @property
     def project_root(self):
@@ -82,21 +86,22 @@ class Project:
         self._prj_config = {
             'version': self.CONFIG_VERSION,
             'package': {
-                'name': 'sonata-project-sample',
-                'vendor': 'eu.sonata-nfv.package',
+                'name': '5gtango-project-sample',
+                'vendor': 'eu.5gtango',
                 'version': '0.1',
                 'maintainer': 'Name, Company, Contact',
                 'description': 'Some description about this sample'
             },
             'descriptor_extension':
-                self._workspace.default_descriptor_extension
+                self._workspace.default_descriptor_extension,
+            'files': []
         }
 
     def create_prj(self):
         log.info('Creating project at {}'.format(self._prj_root))
 
         self._create_dirs()
-        self._create_prj_stub()
+        self._write_prj_yml()
 
     def _create_dirs(self):
         """
@@ -104,7 +109,7 @@ class Project:
         :return:
         """
         directories = {'sources', 'dependencies', 'deployment'}
-        src_subdirs = {'ssm', 'pattern', 'vnf', 'nsd'}
+        src_subdirs = {'vnfd', 'nsd'}
 
         # Check if dir exists
         if os.path.isdir(self._prj_root):
@@ -119,175 +124,116 @@ class Project:
             os.makedirs(path, exist_ok=True)
 
         src_path = os.path.join(self._prj_root, 'sources')
-        for d in src_subdirs:
-            if d == 'nsd':
-                path = os.path.join(src_path, d)
-            else:
-                path = os.path.join(src_path, d, 'sample')
-            os.makedirs(path, exist_ok=True)
-            self._create_sample(d, path)
+        vnfd_path = os.path.join(src_path, 'vnfd')
+        nsd_path = os.path.join(src_path, 'nsd')
+        os.makedirs(vnfd_path, exist_ok=True)
+        os.makedirs(nsd_path, exist_ok=True)
+        self._create_vnfd(vnfd_path)
+        self._create_nsd(nsd_path)
 
-        self._create_vnf_dir()
-        self._create_nsd_dir()
-
-    def _create_vnf_dir(self, name='sample'):
-        """
-        Function to create a new VNF inside project source.
-        :param name:The VNF name
-        """
-        vnf_subdirs = {'fsm'}
-        vnf_path = os.path.join(self.vnfd_root, name)
-        self._create_sample('vnf', vnf_path)
-        for d in vnf_subdirs:
-            path = os.path.join(vnf_path, d)
-            os.makedirs(path, exist_ok=False)
-
-    def _create_nsd_dir(self):
-        """
-        Function to create a new NSD inside project source.
-        """
-        self._create_sample('nsd', self.nsd_root)
-
-    def _create_prj_stub(self):
-        """
-        Creates the project descriptor (project.yml)
-        :return:
-        """
-        self._prj_config = {
-            'version': self.CONFIG_VERSION,
-            'package':  {
-                'name': 'sonata-project-sample',
-                'vendor': 'eu.sonata-nfv.package',
-                'version': '0.1',
-                'maintainer': 'Name, Company, Contact',
-                'description': 'Some description about this sample'
-            },
-            'descriptor_extension':
-                self._workspace.default_descriptor_extension
-        }
-
-        prj_path = os.path.join(self._prj_root, Project.__descriptor_name__)
-        with open(prj_path, 'w') as prj_file:
-            prj_file.write(yaml.dump(self._prj_config,
-                                     default_flow_style=False))
-
-    def get_ns_descriptor(self):
-        """
-        Obtain the file list of NS descriptors
-        :return:
-        """
-        nsd_list = [os.path.join(self.nsd_root, file)
-                    for file in os.listdir(self.nsd_root)
-                    if os.path.isfile(os.path.join(self.nsd_root, file)) and
-                    file.endswith(self.descriptor_extension)]
-
-        if len(nsd_list) == 0:
-            log.error("Project does not contain a NS Descriptor")
-            return
-
-        if len(nsd_list) != 1:
-            log.warning("Project contains more than one NS Descriptor")
-
-        return nsd_list
-
-    def get_vnf_descriptors(self):
-        """
-        Obtain the file list of VNF descriptors
-        :return:
-        """
-        vnfd_list = []
-        for root, dirs, files in os.walk(self.vnfd_root):
-            for file in files:
-                if file.endswith(self.descriptor_extension):
-                    vnfd_list.append(os.path.join(root, file))
-        return vnfd_list
-
-    def _create_sample(self, prj_type, path):
-        switcher = {
-            # 'fsm': self._create_sample_fsm,
-            'ssm': self._create_sample_ssm,
-            'pattern': self._create_sample_pattern,
-            'vnf': self._create_sample_vnf,
-            'nsd': self._create_sample_nsd
-        }
-        func = switcher.get(prj_type)
-        if func is None:
-            log.error("Could not create sample for "
-                      "" + prj_type + ", unknown project type")
-            return
-
-        func(path)
-
-    @staticmethod
-    def _create_sample_fsm(path):
-        d = {
-            'name': 'sample fsm',
-            'id': 'com.sonata.fsm.sample',
-            'version': '0.1'
-        }
-        prj_path = os.path.join(path, 'fsm.yml')
-        with open(prj_path, 'w') as prj_file:
-            prj_file.write(yaml.dump(d))
-
-    @staticmethod
-    def _create_sample_ssm(path):
-        d = {
-            'name': 'sample ssm',
-            'id': 'com.sonata.ssm.sample',
-            'version': '0.1'
-        }
-        prj_path = os.path.join(path, 'ssm.yml')
-        with open(prj_path, 'w') as prj_file:
-            prj_file.write(yaml.dump(d))
-
-    @staticmethod
-    def _create_sample_pattern(path):
-        d = {
-            'name': 'sample pattern',
-            'id': 'com.sonata.pattern.sample',
-            'version': '0.1'
-        }
-        prj_path = os.path.join(path, 'patterm.yml')
-        with open(prj_path, 'w') as prj_file:
-            prj_file.write(yaml.dump(d))
-
-    @staticmethod
-    def _create_sample_vnf(path):
-        """
-        Create a sample VNF descriptor
-        (to be evoked upon project creation)
-
-        :param path: The VNF sample directory
-        """
+    # create directory and sample VNFD
+    def _create_vnfd(self, path):
         sample_vnfd = 'vnfd-sample.yml'
-        sample_image = 'sample_docker'
+        vnfd_path = os.path.join(path, sample_vnfd)
         rp = __name__
 
         # Copy sample VNF descriptor
         src_path = os.path.join('samples', sample_vnfd)
         srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, os.path.join(path, sample_vnfd))
+        shutil.copyfile(srcfile, vnfd_path)
+        self.add_file(vnfd_path)
 
-        # Copy associated sample VM image
-        src_path = os.path.join('samples', sample_image)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, os.path.join(path, sample_image))
-
-    @staticmethod
-    def _create_sample_nsd(path):
-        """
-        Create a sample NS descriptor
-        (to be evoked upon project creation)
-
-        :param path: The NSD sample directory
-        """
+    # create NSD
+    def _create_nsd(self, path):
         sample_nsd = 'nsd-sample.yml'
+        nsd_path = os.path.join(path, sample_nsd)
         rp = __name__
 
         # Copy sample NS descriptor
         src_path = os.path.join('samples', sample_nsd)
         srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, os.path.join(path, sample_nsd))
+        shutil.copyfile(srcfile, nsd_path)
+        self.add_file(nsd_path)
+
+    # writes project descriptor to file (project.yml)
+    def _write_prj_yml(self):
+        prj_path = os.path.join(self._prj_root, Project.__descriptor_name__)
+        with open(prj_path, 'w') as prj_file:
+            prj_file.write(yaml.dump(self._prj_config,
+                                     default_flow_style=False))
+
+    # resolves wildcards by calling add/remove_file for each file
+    def resolve_wildcards(self, path, add=False, remove=False):
+        for f in glob.glob(path):
+            if add:
+                self.add_file(f)
+            if remove:
+                self.remove_file(f)
+
+    # detects and returns MIME type of specified file
+    def mime_type(self, file):
+        name, extension = os.path.splitext(file)
+
+        # check yml files to detect and classify 5GTANGO descriptors
+        if extension == ".yml" or extension == ".yaml":
+            with open(file, 'r') as yml_file:
+                yml_file = yaml.load(yml_file)
+                schema_url = yml_file["descriptor_schema"]
+                if schema_url:
+                    type = self.type_mapping[schema_url]
+                else:
+                    log.warning('Could not detect MIME type of {}. '
+                                'Using text/yaml'.format(file))
+                    type = 'text/yaml'
+
+        # for non-yml files determine the type using mimetypes
+        else:
+            (type, encoding) = mimetypes.guess_type(file, strict=False)
+            # add more types from a config with mimetypes.read_mime_types(file)
+
+        log.debug('Detected MIME type: {}'.format(type))
+        return type
+
+    # adds a file to the project: detects type and adds to project.yml
+    def add_file(self, file_path, type=None):
+        # resolve wildcards
+        if '*' in file_path:
+            log.debug('Attempting to resolve wildcard in {}'.format(file_path))
+            self.resolve_wildcards(file_path, add=True)
+            return
+
+        # try to detect the MIME type if none is given
+        if type is None:
+            type = self.mime_type(file_path)
+        if type is None:
+            log.error('Could not detect MIME type of {}. Please specify using'
+                      'the -t argument.'.format(file_path))
+            return
+
+        # add to project.yml
+        file = {'path': file_path, 'type': type, 'tags': ['eu.5gtango']}
+        if file in self._prj_config['files']:
+            log.warning('{} is already in project.yml.'.format(file_path))
+        else:
+            self._prj_config['files'].append(file)
+            self._write_prj_yml()
+            log.info('Added {} to project.yml'.format(file_path))
+
+    # removes a file from the project
+    def remove_file(self, file_path):
+        # resolve wildcards
+        if '*' in file_path:
+            log.debug('Attempting to resolve wildcard in {}'.format(file_path))
+            self.resolve_wildcards(file_path, remove=True)
+            return
+
+        for f in self._prj_config['files']:
+            if f['path'] == file_path:
+                self._prj_config['files'].remove(f)
+                self._write_prj_yml()
+                log.info('Removed {} from project.yml'.format(file_path))
+                return
+        log.warning('{} is not in project.yml'.format(file_path))
 
     @staticmethod
     def __is_valid__(project):

@@ -33,6 +33,7 @@
 from setuptools import setup, find_packages
 import os.path as path
 
+
 cwd = path.dirname(__file__)
 with open(path.join(cwd, 'requirements.txt')) as f:
     requirements = f.read().splitlines()
@@ -44,7 +45,7 @@ in 5GTANGO's network service SDK
 
 setup(name='tngsdk.project',
       license='Apache License, Version 2.0',
-      version='0.1',
+      version='0.9',
       url='https://github.com/sonata-nfv/tng-sdk-project',
       author='Manuel Peuster',
       author_email='manuel.peuster@uni-paderborn.de',

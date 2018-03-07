@@ -90,10 +90,7 @@ class CreateWorkspaceTests(unittest.TestCase):
 
         # Assure that None is returned using
         # non-existent root dir and config file
-        self.assertEqual(
-            Workspace.__create_from_descriptor__("/some/root/dir"),
-            None
-        )
+        self.assertEqual(Workspace.__create_from_descriptor__("/test"), None)
 
         # Assure that an error message was logged
         self.assertTrue(m_log.error.called)
@@ -120,7 +117,7 @@ class CreateWorkspaceTests(unittest.TestCase):
             'catalogues_dir': 'catalogues',
             'configuration_dir': 'configuration',
             'projects_dir': 'projects',
-            'validate_watch': '~/.son-workspace/projects'
+            'validate_watch': '~/.tng-workspace/projects'
         }
 
         # Feed this descriptor as a config file
@@ -129,11 +126,7 @@ class CreateWorkspaceTests(unittest.TestCase):
         m_yaml.load.return_value = conf_d
 
         # Ensure it raises error when loading incomplete config descriptor
-        self.assertRaises(
-            KeyError,
-            Workspace.__create_from_descriptor__,
-            None
-        )
+        self.assertTrue(m_log.error.called)
 
         # Complete config descriptor
         conf_d['name'] = 'test workspace config'
@@ -165,7 +158,8 @@ class CreateWorkspaceTests(unittest.TestCase):
         m_yaml.dump.return_value = None
 
         # Call function
-        cfg_d = ws.write_ws_descriptor()
+        # ws.create_dirs()
+        cfg_d = ws.create_files()
 
         # Assure that config file would be writen with the correct location
         configfile = os.path.join(ws.workspace_root,

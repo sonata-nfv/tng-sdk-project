@@ -1,30 +1,20 @@
-##
-## This is a sample network service descriptor
-## that comprises only the sample VNF
-## TODO: replace/modify this sample to a more comprehensive example
+---
+descriptor_schema: "https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml"
 
-descriptor_version: "1.0"
-
-vendor: "eu.sonata-nfv.service-descriptor"
+vendor: "eu.5gtango"
 name: "sample-nsd"
-version: "0.2"
-author: "Name, Company, Contact"
-description: "A sample NSD"
+version: "0.9"
+author: "tango"
+description: "A sample NSD with one sample VNFDs"
 
-##
-## The various network functions this service
-## is composed of.
-##
+# involved network functions
 network_functions:
-  - vnf_id: "sample_vnf"
-    vnf_vendor: "eu.sonata-nfv"
-    vnf_name: "vnf-sample"
-    vnf_version: "0.1"
+  - vnf_id: "vnf1"
+    vnf_vendor: "eu.5gtango"
+    vnf_name: "sample-vnf"
+    vnf_version: "0.9"
 
-##
-## The NS connection points to the 
-## outside world.
-##
+# NS connection points to the outside world
 connection_points:
   - id: "mgmt"
     interface: "ipv4"
@@ -36,47 +26,46 @@ connection_points:
     interface: "ipv4"
     type: "external"
 
-##
-## The virtual links that interconnect
-## the different connections points.
-##
+    
+# virtual links connect the VNFs' and NS' connection points
 virtual_links:
   - id: "mgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "sample_vnf:mgmt"
+      - "vnf1:mgmt"
+      - "vnf2:mgmt"
       - "mgmt"
-
-  - id: "input"
+  - id: "input-2-vnf1"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "input"
-      - "sample_vnf:input"
-
-  - id: "output"
+      - "vnf1:input"
+  - id: "vnf1-2-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "sample_vnf:output"
+      - "vnf1:output"
       - "output"
 
-##
-## The forwarding graphs.
-##
+
 forwarding_graphs:
-  - fg_id: "ns:fg01"
+  - fg_id: "fg01"
     number_of_endpoints: 2
-    number_of_virtual_links: 4
+    number_of_virtual_links: 2
+    constituent_virtual_links: 
+      - "input-2-vnf1"
+      - "vnf1-2-output"
     constituent_vnfs:
-      - "vnf_sample"
+      - "vnf1"
     network_forwarding_paths:
-      - fp_id: "ns:fg01:fp01"
+      - fp_id: "fg01:fp01"
         policy: "none"
         connection_points:
           - connection_point_ref: "input"
             position: 1
-          - connection_point_ref: "sample_vnf:input"
+          - connection_point_ref: "vnf1:input"
             position: 2
-          - connection_point_ref: "sample_vnf:output"
+          - connection_point_ref: "vnf1:output"
             position: 3
           - connection_point_ref: "output"
             position: 4
+

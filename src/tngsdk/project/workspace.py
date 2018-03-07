@@ -46,8 +46,8 @@ log = logging.getLogger(__name__)
 class Workspace:
     BACK_CONFIG_VERSION = "0.03"
     CONFIG_VERSION = "0.05"
-    DEFAULT_WORKSPACE_DIR = os.path.join(expanduser("~"), ".son-workspace")
-    DEFAULT_SCHEMAS_DIR = os.path.join(expanduser("~"), ".son-schema")
+    DEFAULT_WORKSPACE_DIR = os.path.join(expanduser("~"), ".tng-workspace")
+    DEFAULT_SCHEMAS_DIR = os.path.join(expanduser("~"), ".tng-schema")
     __descriptor_name__ = "workspace.yml"
 
     def __init__(self, ws_root, config=None, ws_name=None, log_level=None):
@@ -57,7 +57,6 @@ class Workspace:
 
         if config:
             self._ws_config = config
-
         else:
             self.load_default_config()
             if ws_name:
@@ -65,7 +64,7 @@ class Workspace:
             if log_level:
                 self.config['log_level'] = log_level
 
-        coloredlogs.install(level=self.config['log_level'])
+        # coloredlogs.install(level=self.config['log_level'])
 
     @property
     def workspace_root(self):
@@ -130,17 +129,19 @@ class Workspace:
 
     def load_default_config(self):
         self.config['version'] = self.CONFIG_VERSION
-        self.config['name'] = 'SONATA Workspace'
+        self.config['name'] = '5GTANGO Workspace'
         self.config['log_level'] = 'INFO'
 
         self.config['catalogues_dir'] = 'catalogues'
         self.config['configuration_dir'] = 'configuration'
         self.config['platforms_dir'] = 'platforms'
         self.config['projects_dir'] = 'projects'
+        self.config['projects_config'] = os.path.join(self.workspace_root,
+                                                      'projects', 'config.yml')
 
         self.config['schemas_local_master'] = Workspace.DEFAULT_SCHEMAS_DIR
         self.config['schemas_remote_master'] = \
-            "https://raw.githubusercontent.com/sonata-nfv/son-schema/master/"
+            "https://github.com/sonata-nfv/tng-schema"
 
         self.config['default_descriptor_extension'] = 'yml'
 
@@ -187,7 +188,7 @@ class Workspace:
             path = os.path.join(self.workspace_root, d)
             os.makedirs(path, exist_ok=True)
 
-    def write_ws_descriptor(self):
+    def create_files(self):
         """
         Creates a workspace configuration file descriptor.
         This is triggered by workspace creation and configuration changes.
@@ -200,10 +201,19 @@ class Workspace:
         ws_file = open(ws_file_path, 'w')
         yaml.dump(cfg_d, ws_file, default_flow_style=False)
 
-        return cfg_d
+        # write project config (schema-MIME mapping)
+        mapping = {
+            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/'
+            'function-descriptor/vnfd-schema.yml':
+                'application/vnd.5gtango.vnfd',
+            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/'
+            'service-descriptor/nsd-schema.yml': 'application/vnd.5gtango.nsd'
+        }
+        conf_path = os.path.join(self.workspace_root, 'projects', 'config.yml')
+        conf_file = open(conf_path, 'w')
+        yaml.dump(mapping, conf_file, default_flow_style=False)
 
-    def create_files(self):
-        self.write_ws_descriptor()
+        return cfg_d
 
     def check_ws_exists(self):
         ws_file = os.path.join(self.workspace_root,
@@ -349,7 +359,7 @@ class Workspace:
             self.default_service_platform = sp_id
 
         # update workspace config descriptor
-        self.write_ws_descriptor()
+        self.create_files()
 
     def __eq__(self, other):
         """
@@ -425,18 +435,31 @@ def parse_args_project():
                         help="create a new project at the specified location",
                         required=True)
 
-    parser.add_argument(
-        "-w", "--workspace",
-        help="location of existing (or new) workspace. "
-             "If not specified will assume '{}'"
-             .format(Workspace.DEFAULT_WORKSPACE_DIR),
-        required=False)
+    parser.add_argument("-w", "--workspace",
+                        help="location of existing (or new) workspace. "
+                        "If not specified will assume '{}'"
+                        .format(Workspace.DEFAULT_WORKSPACE_DIR),
+                        required=False)
 
-    parser.add_argument(
-        "--debug",
-        help="increases logging level to debug",
-        required=False,
-        action="store_true")
+    parser.add_argument("--debug",
+                        help="increases logging level to debug",
+                        required=False,
+                        action="store_true")
+
+    parser.add_argument("--add",
+                        help="Add file to project",
+                        required=False,
+                        default=None)
+
+    parser.add_argument("-t", "--type",
+                        help="MIME type of added file (only with --add)",
+                        required=False,
+                        default=None)
+
+    parser.add_argument("--remove",
+                        help="Remove file from project",
+                        required=False,
+                        default=None)
 
     return parser, parser.parse_args()
 
@@ -445,10 +468,10 @@ def parse_args_project():
 def create_project():
     parser, args = parse_args_project()
 
-    log_level = "INFO"
     if args.debug:
-        log_level = "DEBUG"
-        coloredlogs.install(level=log_level)
+        coloredlogs.install(level='DEBUG')
+    else:
+        coloredlogs.install(level='INFO')
 
     # use specified workspace or default
     if args.workspace:
@@ -458,14 +481,27 @@ def create_project():
 
     ws = Workspace.__create_from_descriptor__(ws_root)
     if not ws:
-        print("Could not find a SONATA workspace at the specified location",
+        print("Could not find a 5GTANGO workspace at the specified location",
               file=sys.stderr)
         exit(1)
 
-    log.debug("Attempting to create a new project")
-
-    # create project
     prj_root = os.path.expanduser(args.project)
-    proj = Project(ws, prj_root)
-    proj.create_prj()
-    log.debug("Project created.")
+
+    if args.add:
+        # load project and add file to project.yml
+        log.debug("Attempting to add file {}".format(args.add))
+        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj.add_file(args.add, type=args.type)
+
+    elif args.remove:
+        # load project and remove file from project.yml
+        log.debug("Attempting to remove file {}".format(args.remove))
+        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj.remove_file(args.remove)
+
+    else:
+        # create project
+        log.debug("Attempting to create a new project")
+        proj = Project(ws, prj_root)
+        proj.create_prj()
+        log.debug("Project created.")
