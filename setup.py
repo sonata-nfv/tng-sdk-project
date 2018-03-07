@@ -33,7 +33,6 @@
 from setuptools import setup, find_packages
 import os.path as path
 
-# for windows, replace "python-magic" with "python-magic-bin" in requirements
 
 cwd = path.dirname(__file__)
 with open(path.join(cwd, 'requirements.txt')) as f:

@@ -36,8 +36,8 @@ import logging
 import yaml
 import shutil
 import pkg_resources
-import magic
 import glob
+import mimetypes
 
 
 log = logging.getLogger(__name__)
@@ -186,10 +186,10 @@ class Project:
                                 'Using text/yaml'.format(file))
                     type = 'text/yaml'
 
-        # for non-yml files determine the type using python-magic
+        # for non-yml files determine the type using mimetypes
         else:
-            type = magic.from_file(file, mime=True)
-            # TODO: ask user if unsure
+            (type, encoding) = mimetypes.guess_type(file, strict=False)
+            # add more types from a config with mimetypes.read_mime_types(file)
 
         log.debug('Detected MIME type: {}'.format(type))
         return type
@@ -203,6 +203,10 @@ class Project:
             return
 
         type = self.mime_type(file_path)
+        if type is None:
+            log.error('Could not detect MIME type of {}. Please specify using'
+                      'the -t argument.'.format(file_path))
+            return
 
         # add to project.yml
         file = {'path': file_path, 'type': type, 'tags': ['eu.5gtango']}
