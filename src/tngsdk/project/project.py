@@ -195,14 +195,16 @@ class Project:
         return type
 
     # adds a file to the project: detects type and adds to project.yml
-    def add_file(self, file_path):
+    def add_file(self, file_path, type=None):
         # resolve wildcards
         if '*' in file_path:
             log.debug('Attempting to resolve wildcard in {}'.format(file_path))
             self.resolve_wildcards(file_path, add=True)
             return
 
-        type = self.mime_type(file_path)
+        # try to detect the MIME type if none is given
+        if type is None:
+            type = self.mime_type(file_path)
         if type is None:
             log.error('Could not detect MIME type of {}. Please specify using'
                       'the -t argument.'.format(file_path))

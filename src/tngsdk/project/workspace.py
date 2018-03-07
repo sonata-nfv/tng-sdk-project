@@ -451,6 +451,11 @@ def parse_args_project():
                         required=False,
                         default=None)
 
+    parser.add_argument("-t", "--type",
+                        help="MIME type of added file (only with --add)",
+                        required=False,
+                        default=None)
+
     parser.add_argument("--remove",
                         help="Remove file from project",
                         required=False,
@@ -486,7 +491,7 @@ def create_project():
         # load project and add file to project.yml
         log.debug("Attempting to add file {}".format(args.add))
         proj = Project.__create_from_descriptor__(ws, prj_root)
-        proj.add_file(args.add)
+        proj.add_file(args.add, type=args.type)
 
     elif args.remove:
         # load project and remove file from project.yml
