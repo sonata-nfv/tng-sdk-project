@@ -135,8 +135,6 @@ class Project:
     def _create_vnfd(self, path):
         sample_vnfd = 'vnfd-sample.yml'
         vnfd_path = os.path.join(path, sample_vnfd)
-        sample_image = 'sample_docker'
-        image_path = os.path.join(path, sample_image)
         rp = __name__
 
         # Copy sample VNF descriptor
@@ -144,12 +142,6 @@ class Project:
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, vnfd_path)
         self.add_file(vnfd_path)
-
-        # Copy associated sample VM image
-        src_path = os.path.join('samples', sample_image)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, image_path)
-        self.add_file(image_path)
 
     # create NSD
     def _create_nsd(self, path):
