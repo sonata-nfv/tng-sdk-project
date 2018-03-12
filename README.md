@@ -36,7 +36,7 @@ For both `tng-workspace` and `tng-project` the option `--debug` makes the output
 
 ## Documentation
 
-* [Documentation of SONATA's son-workspace](https://github.com/sonata-nfv/son-cli/wiki/son%E2%80%90workspace)
+See the [wiki](https://github.com/sonata-nfv/tng-sdk-project/wiki) for further documentation and details.
 
 ## Development
 
