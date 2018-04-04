@@ -177,8 +177,6 @@ class Workspace:
         os.makedirs(self.workspace_root, exist_ok=False)
 
         dirs = [self.config['catalogues_dir'],
-                os.path.join(self.config['catalogues_dir'], 'ns_catalogue'),
-                os.path.join(self.config['catalogues_dir'], 'vnf_catalogue'),
                 self.config['configuration_dir'],
                 self.config['platforms_dir'],
                 self.config['projects_dir'],
