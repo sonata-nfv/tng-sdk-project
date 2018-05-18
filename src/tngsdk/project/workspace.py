@@ -44,7 +44,8 @@ log = logging.getLogger(__name__)
 class Workspace:
     BACK_CONFIG_VERSION = "0.03"
     CONFIG_VERSION = "0.05"
-    DEFAULT_WORKSPACE_DIR = os.path.join(os.path.expanduser("~"), ".tng-workspace")
+    DEFAULT_WORKSPACE_DIR = os.path.join(os.path.expanduser("~"),
+                                         ".tng-workspace")
     DEFAULT_SCHEMAS_DIR = os.path.join(os.path.expanduser("~"), ".tng-schema")
     __descriptor_name__ = "workspace.yml"
 
