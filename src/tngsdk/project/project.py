@@ -38,6 +38,9 @@ import shutil
 import pkg_resources
 import glob
 import mimetypes
+import argparse
+import coloredlogs
+from tngsdk.project.workspace import Workspace
 
 
 log = logging.getLogger(__name__)
@@ -322,3 +325,81 @@ class Project:
                         .format(prj_config['version'], prj_config))
 
         return Project(workspace, prj_root, config=prj_config)
+
+
+def parse_args_project():
+    parser = argparse.ArgumentParser(description="Create new 5GTANGO project")
+    parser.add_argument("-p", "--project",
+                        help="create a new project at the specified location",
+                        required=True)
+
+    parser.add_argument("-w", "--workspace",
+                        help="location of existing (or new) workspace. "
+                        "If not specified will assume '{}'"
+                        .format(Workspace.DEFAULT_WORKSPACE_DIR),
+                        required=False)
+
+    parser.add_argument("--debug",
+                        help="increases logging level to debug",
+                        required=False,
+                        action="store_true")
+
+    parser.add_argument("--add",
+                        help="Add file to project",
+                        required=False,
+                        default=None)
+
+    parser.add_argument("-t", "--type",
+                        help="MIME type of added file (only with --add)",
+                        required=False,
+                        default=None)
+
+    parser.add_argument("--remove",
+                        help="Remove file from project",
+                        required=False,
+                        default=None)
+
+    return parser, parser.parse_args()
+
+
+# for entry point tng-project; was "tng-project --project" before
+def create_project():
+    parser, args = parse_args_project()
+
+    if args.debug:
+        coloredlogs.install(level='DEBUG')
+    else:
+        coloredlogs.install(level='INFO')
+
+    # use specified workspace or default
+    if args.workspace:
+        ws_root = os.path.expanduser(args.workspace)
+    else:
+        ws_root = Workspace.DEFAULT_WORKSPACE_DIR
+
+    ws = Workspace.__create_from_descriptor__(ws_root)
+    if not ws:
+        print("Could not find a 5GTANGO workspace at the specified location",
+              file=sys.stderr)
+        exit(1)
+
+    prj_root = os.path.expanduser(args.project)
+
+    if args.add:
+        # load project and add file to project.yml
+        log.debug("Attempting to add file {}".format(args.add))
+        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj.add_file(args.add, type=args.type)
+
+    elif args.remove:
+        # load project and remove file from project.yml
+        log.debug("Attempting to remove file {}".format(args.remove))
+        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj.remove_file(args.remove)
+
+    else:
+        # create project
+        log.debug("Attempting to create a new project")
+        proj = Project(ws, prj_root)
+        proj.create_prj()
+        log.debug("Project created.")

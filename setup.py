@@ -64,9 +64,9 @@ setup(name='tngsdk.project',
               'tng-sdk-workspace=tngsdk.project.workspace:init_workspace',
               'tng-workspace=tngsdk.project.workspace:init_workspace',
               'tng-wks=tngsdk.project.workspace:init_workspace',
-              'tng-sdk-project=tngsdk.project.workspace:create_project',
-              'tng-project=tngsdk.project.workspace:create_project',
-              'tng-prj=tngsdk.project.workspace:create_project'
+              'tng-sdk-project=tngsdk.project.project:create_project',
+              'tng-project=tngsdk.project.project:create_project',
+              'tng-prj=tngsdk.project.project:create_project'
           ],
       },
       test_suite='tngsdk',

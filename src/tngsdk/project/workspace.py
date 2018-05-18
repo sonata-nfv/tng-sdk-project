@@ -34,11 +34,9 @@ import logging
 import coloredlogs
 import sys
 import os
-from os.path import expanduser
 import yaml
 import argparse
 
-from tngsdk.project.project import Project
 
 log = logging.getLogger(__name__)
 
@@ -46,8 +44,8 @@ log = logging.getLogger(__name__)
 class Workspace:
     BACK_CONFIG_VERSION = "0.03"
     CONFIG_VERSION = "0.05"
-    DEFAULT_WORKSPACE_DIR = os.path.join(expanduser("~"), ".tng-workspace")
-    DEFAULT_SCHEMAS_DIR = os.path.join(expanduser("~"), ".tng-schema")
+    DEFAULT_WORKSPACE_DIR = os.path.join(os.path.expanduser("~"), ".tng-workspace")
+    DEFAULT_SCHEMAS_DIR = os.path.join(os.path.expanduser("~"), ".tng-schema")
     __descriptor_name__ = "workspace.yml"
 
     def __init__(self, ws_root, config=None, ws_name=None, log_level=None):
@@ -216,6 +214,7 @@ class Workspace:
     def check_ws_exists(self):
         ws_file = os.path.join(self.workspace_root,
                                Workspace.__descriptor_name__)
+        print(ws_file)
         return os.path.exists(ws_file) or os.path.exists(self.workspace_root)
 
     @staticmethod
@@ -410,12 +409,12 @@ def init_workspace():
             exit(1)
 
     else:
-        ws_root = expanduser(args.workspace)
+        ws_root = os.path.expanduser(args.workspace)
 
     # init workspace
     ws = Workspace(ws_root, log_level=log_level)
     if ws.check_ws_exists():
-        print("A workspace already exists at the specified location, exiting",
+        print("A workspace already exists at the specified location",
               file=sys.stderr)
         exit(1)
 
@@ -425,81 +424,3 @@ def init_workspace():
     ws.create_files()
     os.chdir(cwd)
     log.debug("Workspace created.")
-
-
-def parse_args_project():
-    parser = argparse.ArgumentParser(description="Create new 5GTANGO project")
-    parser.add_argument("-p", "--project",
-                        help="create a new project at the specified location",
-                        required=True)
-
-    parser.add_argument("-w", "--workspace",
-                        help="location of existing (or new) workspace. "
-                        "If not specified will assume '{}'"
-                        .format(Workspace.DEFAULT_WORKSPACE_DIR),
-                        required=False)
-
-    parser.add_argument("--debug",
-                        help="increases logging level to debug",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("--add",
-                        help="Add file to project",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("-t", "--type",
-                        help="MIME type of added file (only with --add)",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("--remove",
-                        help="Remove file from project",
-                        required=False,
-                        default=None)
-
-    return parser, parser.parse_args()
-
-
-# for entry point tng-project; was "tng-project --project" before
-def create_project():
-    parser, args = parse_args_project()
-
-    if args.debug:
-        coloredlogs.install(level='DEBUG')
-    else:
-        coloredlogs.install(level='INFO')
-
-    # use specified workspace or default
-    if args.workspace:
-        ws_root = expanduser(args.workspace)
-    else:
-        ws_root = Workspace.DEFAULT_WORKSPACE_DIR
-
-    ws = Workspace.__create_from_descriptor__(ws_root)
-    if not ws:
-        print("Could not find a 5GTANGO workspace at the specified location",
-              file=sys.stderr)
-        exit(1)
-
-    prj_root = os.path.expanduser(args.project)
-
-    if args.add:
-        # load project and add file to project.yml
-        log.debug("Attempting to add file {}".format(args.add))
-        proj = Project.__create_from_descriptor__(ws, prj_root)
-        proj.add_file(args.add, type=args.type)
-
-    elif args.remove:
-        # load project and remove file from project.yml
-        log.debug("Attempting to remove file {}".format(args.remove))
-        proj = Project.__create_from_descriptor__(ws, prj_root)
-        proj.remove_file(args.remove)
-
-    else:
-        # create project
-        log.debug("Attempting to create a new project")
-        proj = Project(ws, prj_root)
-        proj.create_prj()
-        log.debug("Project created.")
