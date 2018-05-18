@@ -210,8 +210,13 @@ class Project:
                       'the -t argument.'.format(file_path))
             return
 
+        # calculate relative file path to project root
+        abs_file_path = os.path.abspath(file_path)
+        abs_prj_root = os.path.abspath(self._prj_root)
+        rel_file_path = os.path.relpath(abs_file_path, abs_prj_root)
+
         # add to project.yml
-        file = {'path': file_path, 'type': type, 'tags': ['eu.5gtango']}
+        file = {'path': rel_file_path, 'type': type, 'tags': ['eu.5gtango']}
         if file in self._prj_config['files']:
             log.warning('{} is already in project.yml.'.format(file_path))
         else:
@@ -227,8 +232,13 @@ class Project:
             self.resolve_wildcards(file_path, remove=True)
             return
 
+        # calculate relative file path to project root (similar to add_file)
+        abs_file_path = os.path.abspath(file_path)
+        abs_prj_root = os.path.abspath(self._prj_root)
+        rel_file_path = os.path.relpath(abs_file_path, abs_prj_root)
+
         for f in self._prj_config['files']:
-            if f['path'] == file_path:
+            if f['path'] == rel_file_path:
                 self._prj_config['files'].remove(f)
                 self._write_prj_yml()
                 log.info('Removed {} from project.yml'.format(file_path))
