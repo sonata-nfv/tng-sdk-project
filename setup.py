@@ -61,8 +61,12 @@ setup(name='tngsdk.project',
       zip_safe=False,
       entry_points={
           'console_scripts': [
+              'tng-sdk-workspace=tngsdk.project.workspace:init_workspace',
               'tng-workspace=tngsdk.project.workspace:init_workspace',
-              'tng-project=tngsdk.project.workspace:create_project'
+              'tng-wks=tngsdk.project.workspace:init_workspace',
+              'tng-sdk-project=tngsdk.project.project:create_project',
+              'tng-project=tngsdk.project.project:create_project',
+              'tng-prj=tngsdk.project.project:create_project'
           ],
       },
       test_suite='tngsdk',
