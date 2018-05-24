@@ -13,11 +13,7 @@ The seed code of this component is based on the `son-cli` toolbox that was devel
 $ python setup.py install
 ```
 
-Requires Python 3.5. On Ubuntu, use
-
-```bash
-$ python3 setup.py install
-```
+If this doesn't work, use `python3 setup.py develop` instead.
 
 ## Usage
 
