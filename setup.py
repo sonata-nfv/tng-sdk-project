@@ -66,7 +66,11 @@ setup(name='tngsdk.project',
               'tng-wks=tngsdk.project.workspace:init_workspace',
               'tng-sdk-project=tngsdk.project.project:create_project',
               'tng-project=tngsdk.project.project:create_project',
-              'tng-prj=tngsdk.project.project:create_project'
+              'tng-prj=tngsdk.project.project:create_project',
+              'tng-sdk-descriptorgen=tngsdk.descriptorgen.descriptorgen:'
+              'generate',
+              'tng-descriptorgen=tngsdk.descriptorgen.descriptorgen:generate',
+              'tng-dgn=tngsdk.descriptorgen.descriptorgen:generate'
           ],
       },
       test_suite='tngsdk',

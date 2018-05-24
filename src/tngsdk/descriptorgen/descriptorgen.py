@@ -1,6 +1,7 @@
 import argparse
 import yaml
 import copy
+from os import path
 
 
 def parse_args():
@@ -23,16 +24,18 @@ def parse_args():
 def generate_tango():
     args = parse_args()
 
-    with open('default-descriptors/tango_default_nsd.yml') as f:
+    # load default descriptors (relative to file location, not curr directory)
+    descriptor_dir = path.join(path.dirname(__file__), 'default-descriptors')
+    with open(path.join(descriptor_dir, 'tango_default_nsd.yml')) as f:
         tango_default_nsd = yaml.load(f)
-    with open('default-descriptors/tango_default_vnfd.yml') as f:
+    with open(path.join(descriptor_dir, 'tango_default_vnfd.yml')) as f:
         tango_default_vnfd = yaml.load(f)
 
     # generate VNFDs
     vnfds = []
     tango_default_vnfd['author'] = args.author
     tango_default_vnfd['vendor'] = args.vendor
-    for i in range(args.vnfs):
+    for i in range(int(args.vnfs)):
         vnfd = copy.deepcopy(tango_default_vnfd)
         vnfd['name'] = 'default-vnf{}'.format(i)
         vnfds.append(vnfd)
@@ -44,7 +47,17 @@ def generate_tango():
     nsd['name'] = args.name
     nsd['description'] = args.description
 
-    # TODO: vLinks, forwarding graph
+    for i, vnf in enumerate(vnfds):
+        # list involved VNFs
+        # first entry already exists -> adjust, then append new ones
+        if i > 0:
+            nsd['network_functions'].append({})
+        nsd['network_functions'][i]['vnf_id'] = 'vnf{}'.format(i)
+        nsd['network_functions'][i]['vnf_name'] = vnf['name']
+        nsd['network_functions'][i]['vnf_vendor'] = vnf['vendor']
+        nsd['network_functions'][i]['vnf_version'] = vnf['version']
+
+        # TODO: vLinks, forwarding graph (see javascript implementation)
 
     return nsd, vnfds
 
@@ -54,7 +67,7 @@ def generate():
     # TODO: generate OSM
 
     # write generated descriptors to file
-    # TODO: allow to specify location. or just return the yaml without saving
+    # TODO: allow to set location (-o); or just return the yaml without saving
     with open('tango_nsd.yml', 'w', newline='') as f:
         yaml.dump(nsd, f, default_flow_style=False)
     for i, vnf in enumerate(vnfds):
