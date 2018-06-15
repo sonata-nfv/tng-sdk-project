@@ -40,6 +40,8 @@ import glob
 import mimetypes
 import argparse
 import coloredlogs
+from collections import defaultdict
+from tabulate import tabulate
 from tngsdk.project.workspace import Workspace
 
 
@@ -248,6 +250,20 @@ class Project:
                 return
         log.warning('{} is not in project.yml'.format(file_path))
 
+    # prints project info/status
+    def project_status(self):
+        # print general info
+        print('Project: {}'.format(self._prj_config['package']['name']))
+        print('Vendor: {}'.format(self._prj_config['package']['vendor']))
+        print('Version: {}'.format(self._prj_config['package']['version']))
+        print(self._prj_config['package']['description'])
+
+        # collect and print info about involved MIME types (type + quanity)
+        types = defaultdict(int)
+        for f in self._prj_config['files']:
+            types[f['type']] += 1
+        print(tabulate(types.items(), ['MIME type', 'Quantity'], 'grid'))
+
     @staticmethod
     def __is_valid__(project):
         """Checks if a given project is valid"""
@@ -359,6 +375,11 @@ def parse_args_project():
                         required=False,
                         default=None)
 
+    parser.add_argument("--status",
+                        help="Show project file paths",
+                        required=False,
+                        action="store_true")
+
     return parser, parser.parse_args()
 
 
@@ -396,6 +417,12 @@ def create_project():
         log.debug("Attempting to remove file {}".format(args.remove))
         proj = Project.__create_from_descriptor__(ws, prj_root)
         proj.remove_file(args.remove)
+
+    elif args.status:
+        # load project and show paths of involved files
+        log.debug("Attempting to show project status")
+        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj.project_status()
 
     else:
         # create project
