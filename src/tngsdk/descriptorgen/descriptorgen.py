@@ -199,6 +199,11 @@ def generate_osm(args):
     return nsd, vnfds
 
 
+# save the generated descriptors in the specified folder; add a prefix for each flavor
+def save_descriptors(nsd, vnfds, flavor, folder='descriptors'):
+    # TODO: create folder and dump yml descriptros with tango and osm prefix
+    pass
+
 def generate():
     args = parse_args()
     if args.debug:
@@ -211,7 +216,7 @@ def generate():
     nsd, vnfds = generate_osm(args)
 
     # write generated descriptors to file
-    # TODO: allow to set location (-o); or just return the yaml without saving
+    # TODO: allow to set location (-o) --> use for save_descriptors()
     with open('tango_nsd.yml', 'w', newline='') as f:
         yaml.dump(nsd, f, default_flow_style=False)
     for i, vnf in enumerate(vnfds):
