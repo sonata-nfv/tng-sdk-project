@@ -7,7 +7,7 @@ descriptor_schema: "https://raw.githubusercontent.com/sonata-nfv/tng-schema/mast
 vendor: "eu.5gtango"
 name: "default-nsd"
 version: "0.9"
-author: "eu.5gtango"
+author: "5GTANGO Developer"
 description: "A default NSD with one default VNFDs"
 
 # involved network functions

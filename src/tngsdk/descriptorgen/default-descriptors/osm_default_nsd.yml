@@ -6,7 +6,7 @@ nsd-catalog:
   - id: default-nsd
     name: default-nsd
     description: "A default NSD with one default VNFDs"
-    vendor: ETSI
+    vendor: etsi.osm
     version: 1.0
     
     constituent-vnfd:

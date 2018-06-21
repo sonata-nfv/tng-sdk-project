@@ -5,7 +5,7 @@ vnfd-catalog:
     - id: default-vnfd
       name: default-vnfd
       short-name: default-vnfd
-      vendor: ETSI
+      vendor: etsi.osm
       version: 0.9
       description: "A default VNFD with one VDU"
 
