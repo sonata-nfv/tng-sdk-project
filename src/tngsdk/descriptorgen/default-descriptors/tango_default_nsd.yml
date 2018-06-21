@@ -1,5 +1,5 @@
-# do NOT delete: this is used by tng-sdk-descriptorgen
-# default NSD with a simple chain of one default VNFs (ubuntu)
+# default NSD with one default VNF (ubuntu)
+# used as basis to generate new NSDs with arbitrary VNFs
 
 ---
 descriptor_schema: "https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml"
@@ -12,7 +12,7 @@ description: "A default NSD with one default VNFDs"
 
 # involved network functions
 network_functions:
-  - vnf_id: "vnf1"
+  - vnf_id: "vnf0"
     vnf_vendor: "eu.5gtango"
     vnf_name: "ubuntu-vnf"
     vnf_version: "0.9"
@@ -35,18 +35,17 @@ virtual_links:
   - id: "mgmt"
     connectivity_type: "E-LAN"
     connection_points_reference:
-      - "vnf1:mgmt"
-      - "vnf2:mgmt"
       - "mgmt"
-  - id: "input-2-vnf1"
+      - "vnf0:mgmt"
+  - id: "input-2-vnf0"
     connectivity_type: "E-Line"
     connection_points_reference:
       - "input"
-      - "vnf1:input"
-  - id: "vnf1-2-output"
+      - "vnf0:input"
+  - id: "vnf0-2-output"
     connectivity_type: "E-Line"
     connection_points_reference:
-      - "vnf1:output"
+      - "vnf0:output"
       - "output"
 
 
@@ -55,19 +54,19 @@ forwarding_graphs:
     number_of_endpoints: 2
     number_of_virtual_links: 2
     constituent_virtual_links: 
-      - "input-2-vnf1"
-      - "vnf1-2-output"
+      - "input-2-vnf0"
+      - "vnf0-2-output"
     constituent_vnfs:
-      - "vnf1"
+      - "vnf0"
     network_forwarding_paths:
       - fp_id: "fg01:fp01"
         policy: "none"
         connection_points:
           - connection_point_ref: "input"
             position: 1
-          - connection_point_ref: "vnf1:input"
+          - connection_point_ref: "vnf0:input"
             position: 2
-          - connection_point_ref: "vnf1:output"
+          - connection_point_ref: "vnf0:output"
             position: 3
           - connection_point_ref: "output"
             position: 4
