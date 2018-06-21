@@ -2,14 +2,21 @@ import argparse
 import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
 import copy
 from os import path
+import logging
+import coloredlogs
+
+
+log = logging.getLogger(__name__)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate NSD and VNFDs')
+    parser.add_argument('--debug', help='increases logging level to debug',
+                        required=False, action='store_true')
     parser.add_argument('--author', help='set a specific NSD and VNFD author',
-                        required=False, default='Tango', dest='author')
+                        required=False, default='5GTANGO Developer', dest='author')
     parser.add_argument('--vendor', help='set a specific NSD and VNFD vendor',
-                        required=False, default='Tango', dest='vendor')
+                        required=False, default='eu.5gtango', dest='vendor')
     parser.add_argument('--name', help='set a specific NSD name',
                         required=False, default='tango-nsd', dest='name')
     parser.add_argument('--description', help='set a specific NSD description',
@@ -21,10 +28,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def generate_tango():
-    args = parse_args()
-
+# generate 5GTANGO descriptors from the provided high-level arguments
+def generate_tango(args):
     # load default descriptors (relative to file location, not curr directory)
+    log.debug('Loading 5GTANGO default descriptors')
     descriptor_dir = path.join(path.dirname(__file__), 'default-descriptors')
     with open(path.join(descriptor_dir, 'tango_default_nsd.yml')) as f:
         tango_default_nsd = yaml.load(f)
@@ -32,6 +39,7 @@ def generate_tango():
         tango_default_vnfd = yaml.load(f)
 
     # generate VNFDs
+    log.debug('Generating 5GTANGO VNFDs')
     vnfds = []
     tango_default_vnfd['author'] = args.author
     tango_default_vnfd['vendor'] = args.vendor
@@ -41,6 +49,7 @@ def generate_tango():
         vnfds.append(vnfd)
 
     # generate NSD
+    log.debug('Generating 5GTANGO NSD')
     nsd = tango_default_nsd
     nsd['author'] = args.author
     nsd['vendor'] = args.vendor
@@ -118,12 +127,88 @@ def generate_tango():
         })
         pos += 1
 
+    log.info('Generated 5GTANGO descriptors')
+    return nsd, vnfds
+
+
+# generate OSM descriptors from the provided high-level arguments
+def generate_osm(args):
+    # load default descriptors (relative to file location, not curr directory)
+    log.debug('Loading OSM default descriptors')
+    descriptor_dir = path.join(path.dirname(__file__), 'default-descriptors')
+    with open(path.join(descriptor_dir, 'osm_default_nsd.yml')) as f:
+        osm_default_nsd = yaml.load(f)
+    with open(path.join(descriptor_dir, 'osm_default_vnfd.yml')) as f:
+        osm_default_vnfd = yaml.load(f)
+
+    # generate VNFDs
+    log.debug('Generating 5GTANGO VNFDs')
+    vnfds = []
+    for i in range(int(args.vnfs)):
+        vnfd = copy.deepcopy(osm_default_vnfd)
+        vnfd['vnfd-catalog']['vnfd'][0]['id'] = 'default-vnf{}'.format(i)
+        vnfd['vnfd-catalog']['vnfd'][0]['name'] = 'default-vnf{}'.format(i)
+        vnfd['vnfd-catalog']['vnfd'][0]['short-name'] = 'default-vnf{}'.format(i)
+        vnfd['vnfd-catalog']['vnfd'][0]['vendor'] = args.vendor
+        vnfds.append(vnfd)
+
+    # generate NSD
+    log.debug('Generating 5GTANGO NSD')
+    nsd = osm_default_nsd['nsd-catalog']['nsd'][0]
+    nsd['vendor'] = args.vendor
+    nsd['id'] = args.name
+    nsd['name'] = args.name
+    nsd['description'] = args.description
+
+    # skip first vnf
+    for i, vnf in enumerate(vnfds):
+        # updated existing entries for vnf0 and then append new ones
+        if i > 0:
+            nsd['constituent-vnfd'].append({})
+            nsd['vld'][0]['vnfd-connection-point-ref'].append({})
+
+        # list involved vnfs
+        nsd['constituent-vnfd'][i]['member-vnf-index'] = i
+        nsd['constituent-vnfd'][i]['vnfd-id-ref'] = vnf['vnfd-catalog']['vnfd'][0]['id']
+
+        # create mgmt connection points
+        nsd['vld'][0]['vnfd-connection-point-ref'][i]['member-vnf-index-ref'] = i
+        nsd['vld'][0]['vnfd-connection-point-ref'][i]['vnfd-connection-point-ref'] = 'mgmt'
+        nsd['vld'][0]['vnfd-connection-point-ref'][i]['vnfd-id-ref'] = vnf['vnfd-catalog']['vnfd'][0]['id']
+
+    # create vlinks between vnfs
+    for i in range(len(vnfds)-1):
+        nsd['vld'].append({
+            'id': 'vnf{}-2-vnf{}'.format(i, i+1),
+            'name': 'vnf{}-2-vnf{}'.format(i, i+1),
+            'vnfd-connection-point-ref': [
+                {
+                    'member-vnf-index-ref': i,
+                    'vnfd-connection-point-ref': 'output',
+                    'vnfd-id-ref': vnfds[i]['vnfd-catalog']['vnfd'][0]['id']
+                },
+                {
+                    'member-vnf-index-ref': i+1,
+                    'vnfd-connection-point-ref': 'input',
+                    'vnfd-id-ref': vnfds[i+1]['vnfd-catalog']['vnfd'][0]['id']
+                }
+            ]
+        })
+
+    log.info('Generated OSM descriptors')
     return nsd, vnfds
 
 
 def generate():
-    nsd, vnfds = generate_tango()
-    # TODO: generate OSM
+    args = parse_args()
+    if args.debug:
+        coloredlogs.install(level='DEBUG')
+    else:
+        coloredlogs.install(level='INFO')
+
+    # TODO: generate both tango and osm descriptors
+    # nsd, vnfds = generate_tango(args)
+    nsd, vnfds = generate_osm(args)
 
     # write generated descriptors to file
     # TODO: allow to set location (-o); or just return the yaml without saving
