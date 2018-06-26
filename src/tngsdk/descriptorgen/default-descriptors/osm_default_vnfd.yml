@@ -7,7 +7,7 @@ vnfd-catalog:
       short-name: default-vnfd
       vendor: etsi.osm
       version: 0.9
-      description: "A default VNFD with one VDU"
+      description: "A VNF based on ubuntu16-04.qcow2"
 
       vdu:
         - id: vdu01
@@ -15,7 +15,7 @@ vnfd-catalog:
           image: ubuntu16-04.qcow2
           vm-flavor:
             vcpu-count: 1
-            memory-gb: 1
+            memory-mb: 512
             storage-gb: 10
           interface:
             - name: vdu-mgmt

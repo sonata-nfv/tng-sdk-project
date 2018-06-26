@@ -9,7 +9,7 @@ vendor: "eu.5gtango"
 name: "ubuntu-vnf"
 version: "0.9"
 author: "5GTANGO Developer"
-description: "A default ubuntu VNF descriptor"
+description: "A VNF based on ubuntu16-04.qcow2"
 
 
 # virtual deployment units inside the VNF
@@ -21,8 +21,8 @@ virtual_deployment_units:
       cpu:
         vcpus: 1
       memory:
-        size: 1
-        size_unit: "GB"
+        size: 512
+        size_unit: "MB"
       storage:
         size: 10
         size_unit: "GB"
