@@ -9,7 +9,6 @@ import coloredlogs
 log = logging.getLogger(__name__)
 
 
-# TODO: --tango and --osm to generate descriptors in just one flavor
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate NSD and VNFDs')
     parser.add_argument('-o', help='set relative output path',

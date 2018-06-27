@@ -43,6 +43,7 @@ Component to manage workspaces and projects
 in 5GTANGO's network service SDK
 """
 
+# FIXME: correctly install package data such that default_descriptors etc are found when installing with 'install'
 setup(name='tngsdk.project',
       license='Apache License, Version 2.0',
       version='0.9',
