@@ -9,9 +9,16 @@ import coloredlogs
 log = logging.getLogger(__name__)
 
 
+# TODO: --tango and --osm to generate descriptors in just one flavor
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate NSD and VNFDs')
+    parser.add_argument('-o', help='set relative output path',
+                        required=False, default='.', dest='out_path')
     parser.add_argument('--debug', help='increases logging level to debug',
+                        required=False, action='store_true')
+    parser.add_argument('--tango', help='only generate 5GTANGO descriptors',
+                        required=False, action='store_true')
+    parser.add_argument('--osm', help='only generate OSM descriptors',
                         required=False, action='store_true')
     parser.add_argument('--author', help='set a specific NSD and VNFD author',
                         required=False, default='5GTANGO Developer', dest='author')
@@ -24,8 +31,6 @@ def parse_args():
                         dest='description')
     parser.add_argument('--vnfs', help='set a specific number of VNFs',
                         required=False, default=1, dest='vnfs')
-    parser.add_argument('-o', help='set relative output path',
-                        required=False, default='.', dest='out_path')
 
     return parser.parse_args()
 
@@ -225,12 +230,14 @@ def generate():
         coloredlogs.install(level='INFO')
 
     # generate and save tango descriptors
-    nsd, vnfds = generate_tango(args)
-    save_descriptors(nsd, vnfds, 'tango', args.out_path)
+    if not args.osm:
+        nsd, vnfds = generate_tango(args)
+        save_descriptors(nsd, vnfds, 'tango', args.out_path)
 
     # generate and save osm descriptors
-    nsd, vnfds = generate_osm(args)
-    save_descriptors(nsd, vnfds, 'osm', args.out_path)
+    if not args.tango:
+        nsd, vnfds = generate_osm(args)
+        save_descriptors(nsd, vnfds, 'osm', args.out_path)
 
 
 if __name__ == '__main__':
