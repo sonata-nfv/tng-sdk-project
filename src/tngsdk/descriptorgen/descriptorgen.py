@@ -1,7 +1,7 @@
 import argparse
 import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
 import copy
-from os import path
+import os
 import logging
 import coloredlogs
 
@@ -24,6 +24,8 @@ def parse_args():
                         dest='description')
     parser.add_argument('--vnfs', help='set a specific number of VNFs',
                         required=False, default=1, dest='vnfs')
+    parser.add_argument('-o', help='set relative output path',
+                        required=False, default='.', dest='out_path')
 
     return parser.parse_args()
 
@@ -32,10 +34,10 @@ def parse_args():
 def generate_tango(args):
     # load default descriptors (relative to file location, not curr directory)
     log.debug('Loading 5GTANGO default descriptors')
-    descriptor_dir = path.join(path.dirname(__file__), 'default-descriptors')
-    with open(path.join(descriptor_dir, 'tango_default_nsd.yml')) as f:
+    descriptor_dir = os.path.join(os.path.dirname(__file__), 'default-descriptors')
+    with open(os.path.join(descriptor_dir, 'tango_default_nsd.yml')) as f:
         tango_default_nsd = yaml.load(f)
-    with open(path.join(descriptor_dir, 'tango_default_vnfd.yml')) as f:
+    with open(os.path.join(descriptor_dir, 'tango_default_vnfd.yml')) as f:
         tango_default_vnfd = yaml.load(f)
 
     # generate VNFDs
@@ -127,7 +129,7 @@ def generate_tango(args):
         })
         pos += 1
 
-    log.info('Generated 5GTANGO descriptors')
+    log.info('Generated 5GTANGO descriptors at {}'.format(args.out_path))
     return nsd, vnfds
 
 
@@ -135,10 +137,10 @@ def generate_tango(args):
 def generate_osm(args):
     # load default descriptors (relative to file location, not curr directory)
     log.debug('Loading OSM default descriptors')
-    descriptor_dir = path.join(path.dirname(__file__), 'default-descriptors')
-    with open(path.join(descriptor_dir, 'osm_default_nsd.yml')) as f:
+    descriptor_dir = os.path.join(os.path.dirname(__file__), 'default-descriptors')
+    with open(os.path.join(descriptor_dir, 'osm_default_nsd.yml')) as f:
         osm_default_nsd = yaml.load(f)
-    with open(path.join(descriptor_dir, 'osm_default_vnfd.yml')) as f:
+    with open(os.path.join(descriptor_dir, 'osm_default_vnfd.yml')) as f:
         osm_default_vnfd = yaml.load(f)
 
     # generate VNFDs
@@ -195,14 +197,25 @@ def generate_osm(args):
             ]
         })
 
-    log.info('Generated OSM descriptors')
+    log.info('Generated OSM descriptors at {}'.format(args.out_path))
     return nsd, vnfds
 
 
 # save the generated descriptors in the specified folder; add a prefix for each flavor
-def save_descriptors(nsd, vnfds, flavor, folder='descriptors'):
-    # TODO: create folder and dump yml descriptros with tango and osm prefix
-    pass
+def save_descriptors(nsd, vnfds, flavor, folder='.'):
+    # create dir if it doesn't exist
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    # dump generated nsd and vnfds
+    outfile = os.path.join(folder, '{}_nsd.yml'.format(flavor))
+    with open(outfile, 'w', newline='') as f:
+        yaml.dump(nsd, f, default_flow_style=False)
+    for i, vnf in enumerate(vnfds):
+        outfile = os.path.join(folder, '{}_vnfd{}.yml'.format(flavor, i))
+        with open(outfile, 'w', newline='') as f:
+            yaml.dump(vnf, f, default_flow_style=False)
+
 
 def generate():
     args = parse_args()
@@ -211,18 +224,13 @@ def generate():
     else:
         coloredlogs.install(level='INFO')
 
-    # TODO: generate both tango and osm descriptors
-    # nsd, vnfds = generate_tango(args)
-    nsd, vnfds = generate_osm(args)
+    # generate and save tango descriptors
+    nsd, vnfds = generate_tango(args)
+    save_descriptors(nsd, vnfds, 'tango', args.out_path)
 
-    # write generated descriptors to file
-    # TODO: allow to set location (-o) --> use for save_descriptors()
-    with open('tango_nsd.yml', 'w', newline='') as f:
-        yaml.dump(nsd, f, default_flow_style=False)
-    for i, vnf in enumerate(vnfds):
-        filename = 'tango_vnfd{}.yml'.format(i)
-        with open(filename, 'w', newline='') as f:
-            yaml.dump(vnf, f, default_flow_style=False)
+    # generate and save osm descriptors
+    nsd, vnfds = generate_osm(args)
+    save_descriptors(nsd, vnfds, 'osm', args.out_path)
 
 
 if __name__ == '__main__':
