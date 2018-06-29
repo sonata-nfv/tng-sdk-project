@@ -59,5 +59,4 @@ setup(name='tng-project',
           ],
       },
       test_suite='tngsdk',
-      tests_require=['pytest']
-)
+      tests_require=['pytest'])
