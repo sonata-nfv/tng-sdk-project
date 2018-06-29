@@ -14,6 +14,8 @@ The seed code of this component is based on the `son-cli` toolbox that was devel
 $ python setup.py install
 ```
 
+If this doesn't work, use `python3 setup.py develop` instead.
+
 ## Usage
 
 To start working, you need a workspace that holds your configuration files. The default location is `~/.tng-workspace/`, but it may be at any location and there can also be multiple workspaces.

@@ -1,6 +1,0 @@
-PyYAML
-setuptools
-pytest
-pyaml
-coloredlogs
-tabulate
