@@ -31,34 +31,18 @@
 # partner consortium (www.5gtango.eu).
 
 from setuptools import setup, find_packages
-import os.path as path
 
 
-cwd = path.dirname(__file__)
-with open(path.join(cwd, 'requirements.txt')) as f:
-    requirements = f.read().splitlines()
-
-longdesc = """
-Component to manage workspaces and projects
-in 5GTANGO's network service SDK
-"""
-
-# FIXME: correctly install package data such that default_descriptors etc are found when installing with 'install'
-setup(name='tngsdk.project',
+setup(name='tng-project',
       license='Apache License, Version 2.0',
       version='0.9',
       url='https://github.com/sonata-nfv/tng-sdk-project',
       author='Manuel Peuster',
       author_email='manuel.peuster@uni-paderborn.de',
-      long_description=longdesc,
       package_dir={'': 'src'},
-      packages=find_packages('src'),  # dependency resolution
-      namespace_packages=['tngsdk', ],
-      include_package_data=True,
-      # package_data={
-      #    'tndsdk': ['project/samples/*']
-      # },
-      install_requires=requirements,
+      packages=find_packages('src'),   # dependency resolution
+      include_package_data=True,       # package data specified in MANIFEST.in
+      install_requires=['PyYAML', 'pytest', 'pyaml', 'oyaml', 'coloredlogs', 'tabulate'],
       zip_safe=False,
       entry_points={
           'console_scripts': [
@@ -75,5 +59,5 @@ setup(name='tngsdk.project',
           ],
       },
       test_suite='tngsdk',
-      setup_requires=[],
-      tests_require=['pytest'])
+      tests_require=['pytest']
+)
