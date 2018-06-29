@@ -227,8 +227,8 @@ class Workspace:
         """
         ws_filename = os.path.join(ws_root, Workspace.__descriptor_name__)
         if not os.path.isdir(ws_root) or not os.path.isfile(ws_filename):
-            log.error("Unable to load workspace descriptor '{}'"
-                      .format(ws_filename))
+            log.error("Unable to load workspace descriptor '{}'. "
+                      "Create workspace with tng-wks and specify location with -w".format(ws_filename))
             return None
 
         ws_file = open(ws_filename, 'r')
