@@ -258,6 +258,11 @@ class Project:
         print('Version: {}'.format(self._prj_config['package']['version']))
         print(self._prj_config['package']['description'])
 
+        if 'files' not in self._prj_config:
+            log.warning('Old SONATA project: project.yml does not have a files section!'
+                        'To translate an old SONATA project to a new 5GTANGO project, use --translate')
+            return
+
         # collect and print info about involved MIME types (type + quanity)
         types = defaultdict(int)
         for f in self._prj_config['files']:
@@ -270,8 +275,19 @@ class Project:
                   'project (in place): {}'.format(self._prj_root))
 
         # update/set version number to current version
+        log.debug('Updating version number to {}'.format(self.CONFIG_VERSION))
         self._prj_config['version'] = self.CONFIG_VERSION
 
+        # update descriptors: replace "schema_version" with "descriptor_schema"
+        log.debug('Updating old SONATA descriptors to new 5GTANGO descriptors')
+        # TODO
+
+        # create files section and add files
+        log.debug('Creating "files" section and adding all files in {}'.format(self._prj_root))
+        self._prj_config['files'] = []
+        self.add_file(os.path.join(self._prj_root, '*'))
+
+        self._write_prj_yml()
         log.info('Successfully translated {} to 5GTANGO project.'.format(self._prj_root))
 
     @staticmethod
