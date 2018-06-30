@@ -264,6 +264,16 @@ class Project:
             types[f['type']] += 1
         print(tabulate(types.items(), ['MIME type', 'Quantity'], 'grid'))
 
+    # translate old SONATA project to new 5GTANGO project (in place)
+    def translate(self):
+        log.debug('Attempting to translate old SONATA project to new 5GTANGO '
+                  'project (in place): {}'.format(self._prj_root))
+
+        # update/set version number to current version
+        self._prj_config['version'] = self.CONFIG_VERSION
+
+        log.info('Successfully translated {} to 5GTANGO project.'.format(self._prj_root))
+
     @staticmethod
     def __is_valid__(project):
         """Checks if a given project is valid"""
@@ -278,7 +288,7 @@ class Project:
         return True
 
     @staticmethod
-    def __create_from_descriptor__(workspace, prj_root):
+    def __create_from_descriptor__(workspace, prj_root, translate=False):
         """
         Creates a Project object based on a configuration descriptor
         :param prj_root: base path of the project
@@ -286,13 +296,10 @@ class Project:
         """
         prj_filename = os.path.join(prj_root, Project.__descriptor_name__)
         if not os.path.isdir(prj_root) or not os.path.isfile(prj_filename):
-            log.error("Unable to load project descriptor '{}'"
-                      .format(prj_filename))
-
+            log.error("Unable to load project descriptor '{}'".format(prj_filename))
             return None
 
-        log.info("Loading Project configuration '{}'"
-                 .format(prj_filename))
+        log.info("Loading Project configuration '{}'".format(prj_filename))
 
         with open(prj_filename, 'r') as prj_file:
             try:
@@ -303,22 +310,21 @@ class Project:
                 return
 
             if not prj_config:
-                log.error("Couldn't read descriptor file: '{0}'"
-                          .format(prj_file))
+                log.error("Couldn't read descriptor file: '{0}'".format(prj_file))
                 return
 
         if prj_config['version'] == Project.CONFIG_VERSION:
             return Project(workspace, prj_root, config=prj_config)
 
         # Protect against invalid versions
-        if prj_config['version'] < Project.BACK_CONFIG_VERSION:
-            log.error("Project configuration version '{0}' is no longer "
-                      "supported (<{1})".format(prj_config['version'],
-                                                Project.CONFIG_VERSION))
+        if prj_config['version'] < Project.BACK_CONFIG_VERSION and not translate:
+            log.error("Project configuration version '{0}' is no longer supported (<{1})."
+                      "To translate to new 5GTANGO project version use --translate"
+                      .format(prj_config['version'], Project.CONFIG_VERSION))
             return
-        if prj_config['version'] > Project.CONFIG_VERSION:
-            log.error("Project configuration version '{0}' is ahead of the "
-                      "current supported version (={1})"
+        if prj_config['version'] > Project.CONFIG_VERSION and not translate:
+            log.error("Project configuration version '{0}' is ahead of the current supported version (={1})."
+                      "To translate to new 5GTANGO project version use --translate"
                       .format(prj_config['version'], Project.CONFIG_VERSION))
             return
 
@@ -380,10 +386,14 @@ def parse_args_project():
                         required=False,
                         action="store_true")
 
+    parser.add_argument("--translate",
+                        help="Translate old SONATA project to new 5GTANGO project",
+                        required=False,
+                        action="store_true")
+
     return parser, parser.parse_args()
 
 
-# for entry point tng-project; was "tng-project --project" before
 def create_project():
     parser, args = parse_args_project()
 
@@ -419,10 +429,14 @@ def create_project():
         proj.remove_file(args.remove)
 
     elif args.status:
-        # load project and show paths of involved files
+        # load project and show status
         log.debug("Attempting to show project status")
         proj = Project.__create_from_descriptor__(ws, prj_root)
         proj.project_status()
+
+    elif args.translate:
+        proj = Project.__create_from_descriptor__(ws, prj_root, translate=True)
+        proj.translate()
 
     else:
         # create project
@@ -430,3 +444,7 @@ def create_project():
         proj = Project(ws, prj_root)
         proj.create_prj()
         log.debug("Project created.")
+
+
+if __name__ == '__main__':
+    create_project()
