@@ -183,9 +183,8 @@ class Project:
         if extension == ".yml" or extension == ".yaml":
             with open(file, 'r') as yml_file:
                 yml_file = yaml.load(yml_file)
-                schema_url = yml_file["descriptor_schema"]
-                if schema_url:
-                    type = self.type_mapping[schema_url]
+                if 'descriptor_schema' in yml_file:
+                    type = self.type_mapping[yml_file['descriptor_schema']]
                 else:
                     log.warning('Could not detect MIME type of {}. '
                                 'Using text/yaml'.format(file))
@@ -285,7 +284,9 @@ class Project:
         # create files section and add files
         log.debug('Creating "files" section and adding all files in {}'.format(self._prj_root))
         self._prj_config['files'] = []
-        self.add_file(os.path.join(self._prj_root, '*'))
+        for f in glob.glob(os.path.join(self._prj_root, 'sources', '**'), recursive=True):
+            if os.path.isfile(f):
+                self.add_file(f)
 
         self._write_prj_yml()
         log.info('Successfully translated {} to 5GTANGO project.'.format(self._prj_root))
