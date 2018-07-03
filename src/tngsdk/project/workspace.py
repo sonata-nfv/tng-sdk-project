@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #  Copyright (c) 2015 SONATA-NFV, 5GTANGO, UBIWHERE, Paderborn University
 # ALL RIGHTS RESERVED.
 #
@@ -199,12 +201,16 @@ class Workspace:
         yaml.dump(cfg_d, ws_file, default_flow_style=False)
 
         # write project config (schema-MIME mapping)
+        # reverse mapping (type to schema) for translation of old SONATA descriptors
         mapping = {
-            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/'
-            'function-descriptor/vnfd-schema.yml':
+            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/function-descriptor/vnfd-schema.yml':
                 'application/vnd.5gtango.vnfd',
-            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/'
-            'service-descriptor/nsd-schema.yml': 'application/vnd.5gtango.nsd'
+            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml':
+                'application/vnd.5gtango.nsd',
+            'application/vnd.5gtango.vnfd':
+                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/function-descriptor/vnfd-schema.yml',
+            'application/vnd.5gtango.nsd':
+                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml'
         }
         conf_path = os.path.join(self.workspace_root, 'projects', 'config.yml')
         conf_file = open(conf_path, 'w')

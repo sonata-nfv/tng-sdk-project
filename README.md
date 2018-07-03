@@ -14,7 +14,7 @@ The seed code of this component is based on the `son-cli` toolbox that was devel
 $ python setup.py install
 ```
 
-If this doesn't work, use `python3 setup.py develop` instead.
+Requires Python 3.5+
 
 ## Usage
 
@@ -25,17 +25,26 @@ $ tng-workspace       # initializes a new workspace at the default location
 $ tng-workspace --workspace path/to/workspace     # inits a workspace at a custom location
 ```
 
-Once you have a workspace, you can create projects with the `tng-project` command. You can also add or remove files from the project (wildcards allowed).
+Once you have a workspace, you can create projects with the `tng-project` command.
+You can also add or remove files from the project (wildcards allowed) or check the project status.
 
 ```bash
 $ tng-project -p path/to/project                # creates a new project at the specified path
 $ tng-project -p path/to/project --add file1    # adds file1 to the project.yml
 $ tng-project -p path/to/project --add file1 --type text/plain  # adds file1 with explicit MIME type
 $ tng-project -p path/to/project --remove file1 # removes file1 from the project.yml
+$ tng-project -p path/to/project --status       # shows project overview/status
 ```
 
 The `--workspace` option allows to specify a workspace at a custom location. Otherwise, the workspace at the default location is used.
 For both `tng-workspace` and `tng-project` the option `--debug` makes the output more verbose.
+
+Since the structure of projects and descriptors changed from SONATA (v3.1) to 5GTANGO (v4.0), `tng-project` also provides a command to automatically translate old to new projects.
+For more information see the [corresponding wiki page](https://github.com/sonata-nfv/tng-sdk-project/wiki/Translating-SONATA-SDK-projects-to-5GTAGNO-SDK-projects).
+
+```bash
+$ tng-project -p path/to/old-project --translate   # translates the project to the new structure
+```
 
 ## Documentation
 

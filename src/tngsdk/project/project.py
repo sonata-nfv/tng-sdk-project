@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #  Copyright (c) 2015 SONATA-NFV, 5GTANGO, UBIWHERE, Paderborn University
 # ALL RIGHTS RESERVED.
 #
@@ -33,7 +35,7 @@
 import sys
 import os
 import logging
-import yaml
+import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
 import shutil
 import pkg_resources
 import glob
@@ -268,6 +270,22 @@ class Project:
             types[f['type']] += 1
         print(tabulate(types.items(), ['MIME type', 'Quantity'], 'grid'))
 
+    # translate old SONATA VNFD or NSD to new 5GTANGO format (descriptor_version --> descriptor_schema)
+    def translate_descriptor(self, descriptor_file, vnfd):
+        log.info('Translating descriptor {}'.format(descriptor_file))
+        with open(descriptor_file, 'r') as f:
+            descriptor = yaml.load(f)
+
+        descriptor.pop('descriptor_version')
+        if vnfd:
+            schema = self.type_mapping['application/vnd.5gtango.vnfd']
+        else:
+            schema = self.type_mapping['application/vnd.5gtango.nsd']
+        descriptor['descriptor_schema'] = schema
+
+        with open(descriptor_file, 'w') as f:
+            f.write(yaml.dump(descriptor, default_flow_style=False))
+
     # translate old SONATA project to new 5GTANGO project (in place)
     def translate(self):
         log.debug('Attempting to translate old SONATA project to new 5GTANGO '
@@ -277,9 +295,16 @@ class Project:
         log.debug('Updating version number to {}'.format(self.CONFIG_VERSION))
         self._prj_config['version'] = self.CONFIG_VERSION
 
-        # update descriptors: replace "schema_version" with "descriptor_schema"
+        # update descriptors: replace "schema_version" with "descriptor_schema" based on nsd/vnf folder
         log.debug('Updating old SONATA descriptors to new 5GTANGO descriptors')
-        # TODO
+        vnfd_path = os.path.join(self._prj_root, 'sources', 'vnf', '**', '*.yml')
+        for vnfd in glob.glob(vnfd_path, recursive=True):
+            if os.path.isfile(vnfd):
+                self.translate_descriptor(vnfd, vnfd=True)
+        nsd_path = os.path.join(self._prj_root, 'sources', 'nsd', '**', '*.yml')
+        for nsd in glob.glob(nsd_path, recursive=True):
+            if os.path.isfile(nsd):
+                self.translate_descriptor(nsd, vnfd=False)
 
         # create files section and add files
         log.debug('Creating "files" section and adding all files in {}'.format(self._prj_root))
