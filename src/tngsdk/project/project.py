@@ -220,6 +220,10 @@ class Project:
         abs_file_path = os.path.abspath(file_path)
         abs_prj_root = os.path.abspath(self._prj_root)
         rel_file_path = os.path.relpath(abs_file_path, abs_prj_root)
+        # fix windows paths by replacing \ with /
+        if os.name == 'nt':
+            rel_file_path = rel_file_path.replace('\\', '/')
+            log.debug('Adjusted Windows path in project.yml: {}'.format(rel_file_path))
 
         # add to project.yml
         file = {'path': rel_file_path, 'type': type, 'tags': ['eu.5gtango']}
