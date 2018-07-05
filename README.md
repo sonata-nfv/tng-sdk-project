@@ -10,13 +10,21 @@ The seed code of this component is based on the `son-cli` toolbox that was devel
 
 ## Installation
 
-Requires Python 3.5+ and `setuptools`:
+Requires Python 3.5+ and `setuptools`. *Note:* The package name changed from `tngsdk.project` to `tng-project`, so make sure to uninstall the old package with `pip uninstall tngsdk.project`.
+
+For simple, automatic installation and usage:
 
 ```bash
-$ python setup.py install
+$ pip install git+https://github.com/sonata-nfv/tng-sdk-project.git
 ```
 
-*Note:* The package name changed from `tngsdk.project` to `tng-project`, so make sure to uninstall the old package with `pip uninstall tngsdk.project`.
+Alternatively, for obtaining the source code, installation, and development:
+
+```bash
+$ git clone https://github.com/sonata-nfv/tng-sdk-project.git
+$ cd tng-sdk-project
+$ python setup.py install
+```
 
 ## Usage
 
