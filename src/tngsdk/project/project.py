@@ -332,7 +332,6 @@ class Project:
     def get_file_paths(self, type):
         return [f['path'] for f in self._prj_config['files'] if f['type'] == type]
 
-
     @staticmethod
     def __is_valid__(project):
         """Checks if a given project is valid"""
