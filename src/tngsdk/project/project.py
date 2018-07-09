@@ -320,6 +320,19 @@ class Project:
         self._write_prj_yml()
         log.info('Successfully translated {} to 5GTANGO project.'.format(self._prj_root))
 
+    # return a list of relative file paths to all NSDs (default: Tango NSDs)
+    def get_nsds(self, type='application/vnd.5gtango.nsd'):
+        return self.get_file_paths(type)
+
+    # return a list of relative file paths to all VNFDs (default: Tango VNFDs)
+    def get_vnfds(self, type='application/vnd.5gtango.vnfd'):
+        return self.get_file_paths(type)
+
+    # return a list of relative (to proj root) file paths to files of the specified type
+    def get_file_paths(self, type):
+        return [f['path'] for f in self._prj_config['files'] if f['type'] == type]
+
+
     @staticmethod
     def __is_valid__(project):
         """Checks if a given project is valid"""
@@ -440,6 +453,7 @@ def parse_args_project():
     return parser, parser.parse_args()
 
 
+# create and return project
 def create_project():
     parser, args = parse_args_project()
 
@@ -491,6 +505,8 @@ def create_project():
         proj.create_prj()
         log.debug("Project created.")
 
+    return proj
+
 
 if __name__ == '__main__':
-    create_project()
+    project = create_project()
