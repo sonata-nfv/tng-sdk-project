@@ -1,4 +1,4 @@
-[![Join the chat at https://gitter.im/5gtango/tango-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/5gtango/tango-sdk)
+[![Join the chat at https://gitter.im/5gtango/tango-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/5gtango/tango-sdk) [![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-sdk-project-pipeline/master)](https://jenkins.sonata-nfv.eu/job/tng-sdk-project-pipeline/job/master/)
 
 <p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
 
