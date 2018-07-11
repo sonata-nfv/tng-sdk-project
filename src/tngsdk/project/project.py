@@ -104,28 +104,25 @@ class Project:
             'files': []
         }
 
-    def create_prj(self):
+    def create_prj(self, empty=False):
+        # create project root directory (if it doesn't exist)
         log.info('Creating project at {}'.format(self._prj_root))
-
-        self._create_dirs()
-        self._write_prj_yml()
-
-    def _create_dirs(self):
-        """
-        Creates the directory tree of the project
-        :return:
-        """
-        directories = {'sources', 'dependencies', 'deployment'}
-        src_subdirs = {'vnfd', 'nsd'}
-
-        # Check if dir exists
         if os.path.isdir(self._prj_root):
-            print("Unable to create project at '{}'. "
-                  "Directory already exists."
+            print("Unable to create project at '{}'. Directory already exists."
                   .format(self._prj_root), file=sys.stderr)
             exit(1)
-
         os.makedirs(self._prj_root, exist_ok=False)
+
+        # create subdirs, sample descriptors, and project.yml
+        if empty:
+            log.debug('Creating empty project (no folders or sample files)')
+        else:
+            self._create_dirs()
+        self._write_prj_yml()
+
+    # creates directory tree of the project and sample descriptors
+    def _create_dirs(self):
+        directories = {'sources', 'dependencies', 'deployment'}
         for d in directories:
             path = os.path.join(self._prj_root, d)
             os.makedirs(path, exist_ok=True)
@@ -419,6 +416,11 @@ def parse_args_project():
                         .format(Workspace.DEFAULT_WORKSPACE_DIR),
                         required=False)
 
+    parser.add_argument("--empty",
+                        help="create an empty project (without sample files)",
+                        required=False,
+                        action="store_true")
+
     parser.add_argument("--debug",
                         help="increases logging level to debug",
                         required=False,
@@ -501,7 +503,7 @@ def create_project():
         # create project
         log.debug("Attempting to create a new project")
         proj = Project(ws, prj_root)
-        proj.create_prj()
+        proj.create_prj(args.empty)
         log.debug("Project created.")
 
     return proj
