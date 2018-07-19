@@ -4,7 +4,7 @@
 
 # tng-sdk-project
 
-This repository contains the `tng-sdk-project` component that is part of the European H2020 project [5GTANGO](http://www.5gtango.eu) NFV SDK. This component is responsible to manage network service workspaces and projects on the developer's machine.
+This repository contains the `tng-sdk-project` component that is part of the European H2020 project [5GTANGO](http://www.5gtango.eu) NFV SDK. This component is responsible to manage network service workspaces and projects on the developer's machine. It allows preparing 5GTANGO projects containing service descriptions, for example. These projects are prepared for packaging and future use by other components.
 
 The seed code of this component is based on the `son-cli` toolbox that was developed as part of the European H2020 project [SONATA](http://sonata-nfv.eu).
 
@@ -59,6 +59,10 @@ $ tng-project -p path/to/old-project --translate   # translates the project to t
 ## Documentation
 
 See the [wiki](https://github.com/sonata-nfv/tng-sdk-project/wiki) for further documentation and details.
+
+## Dependencies
+
+tng-sdk-project only depends on Python packages, which are listed in and can be installed through [`setup.py`](setup.py).
 
 ## Development
 
