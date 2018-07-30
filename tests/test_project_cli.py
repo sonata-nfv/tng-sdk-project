@@ -36,14 +36,31 @@ import pytest
 import os
 import shutil
 import yaml
+import tngsdk.project.workspace as workspace
 import tngsdk.project.project as cli
 
 
 class TestProjectCLI:
+    # create and return a temporary workspace 'test-ws'
+    @pytest.fixture(scope='module')
+    def workspace(self):
+        args = workspace.parse_args_workspace([
+            '-w', 'test-ws',
+            '--debug'
+        ])
+        workspace.init_workspace(args)
+        assert os.path.isdir('test-ws')
+        yield 'test-ws'
+        shutil.rmtree('test-ws')
+
     # create and return a new temporary project 'test-project'
     @pytest.fixture(scope='module')
-    def project(self):
-        args = cli.parse_args_project(['-p', 'test-project'])
+    def project(self, workspace):
+        args = cli.parse_args_project([
+            '-p', 'test-project',
+            '-w', workspace,
+            '--debug'
+        ])
         project = cli.create_project(args)
         assert os.path.isdir('test-project')
         assert os.path.isfile(os.path.join('test-project', 'project.yml'))
@@ -51,7 +68,7 @@ class TestProjectCLI:
         shutil.rmtree('test-project')
 
     # add a file to the test project
-    def test_add_file(self, project):
+    def test_add_file(self, workspace, project):
         project_path = project.project_root
 
         # create new text file inside the project
@@ -62,6 +79,7 @@ class TestProjectCLI:
 
         # add to project.yml
         args = cli.parse_args_project([
+            '-w', workspace,
             '-p', str(project_path),
             '--add', str(file_path),
             '--debug'
@@ -74,13 +92,14 @@ class TestProjectCLI:
             assert 'sample.txt' in project_files
 
     # remove a file from the test project
-    def test_remove_file(self, project):
+    def test_remove_file(self, workspace, project):
         # check if sample NSD exists
         project_files = [f['path'] for f in project.project_config['files']]
         assert any('nsd-sample.yml' in path for path in project_files)
 
         # remove sample NSD
         args = cli.parse_args_project([
+            '-w', workspace,
             '-p', str(project.project_root),
             '--remove', os.path.join(project.project_root, 'sources', 'nsd', 'nsd-sample.yml'),
             '--debug'
