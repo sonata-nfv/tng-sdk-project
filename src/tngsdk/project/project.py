@@ -408,8 +408,8 @@ class Project:
         return Project(workspace, prj_root, config=prj_config)
 
 
-def parse_args_project():
-    parser = argparse.ArgumentParser(description="Create new 5GTANGO project")
+def parse_args_project(input_args=None):
+    parser = argparse.ArgumentParser(description="5GTANGO SDK project")
     parser.add_argument("-p", "--project",
                         help="create a new project at the specified location",
                         required=True)
@@ -455,12 +455,15 @@ def parse_args_project():
                         required=False,
                         action="store_true")
 
-    return parser, parser.parse_args()
+    if input_args is None:
+        input_args = sys.argv[1:]
+    return parser.parse_args(input_args)
 
 
 # create and return project
-def create_project():
-    parser, args = parse_args_project()
+def create_project(args=None):
+    if args is None:
+        args = parse_args_project()
 
     if args.debug:
         coloredlogs.install(level='DEBUG')

@@ -46,7 +46,6 @@ class TestProject:
         return ws
 
     # create a new project 'test-project' inside pytest's tmpdir
-    @pytest.fixture()
     def test_project_creation(self, tmpdir):
         ws = self.load_workspace()
 
