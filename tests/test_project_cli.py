@@ -36,21 +36,19 @@ import pytest
 import os
 import shutil
 import yaml
-from tngsdk.project.project import Project
 import tngsdk.project.project as cli
 
 
 class TestProjectCLI:
     # create and return a new temporary project 'test-project'
     @pytest.fixture(scope='module')
-    def project(self, tmpdir_factory):
-        tmpdir_factory.mktemp('test-dir')
-        args = cli.parse_args_project(['-p', 'test-dir/test-project'])
+    def project(self):
+        args = cli.parse_args_project(['-p', 'test-project'])
         project = cli.create_project(args)
-        assert os.path.isdir('test-dir/test-project')
-        assert os.path.isfile(os.path.join('test-dir', 'test-project', 'project.yml'))
+        assert os.path.isdir('test-project')
+        assert os.path.isfile(os.path.join('test-project', 'project.yml'))
         yield project
-        shutil.rmtree('test-dir')
+        shutil.rmtree('test-project')
 
     # add a file to the test project
     def test_add_file(self, project):
