@@ -243,6 +243,10 @@ class Project:
         abs_file_path = os.path.abspath(file_path)
         abs_prj_root = os.path.abspath(self._prj_root)
         rel_file_path = os.path.relpath(abs_file_path, abs_prj_root)
+        # adjust to windows paths by replacing \ with /
+        if os.name == 'nt':
+            rel_file_path = rel_file_path.replace('\\', '/')
+            log.debug('Adjusted relative Windows path to match project.yml: {}'.format(rel_file_path))
 
         for f in self._prj_config['files']:
             if f['path'] == rel_file_path:
@@ -404,8 +408,8 @@ class Project:
         return Project(workspace, prj_root, config=prj_config)
 
 
-def parse_args_project():
-    parser = argparse.ArgumentParser(description="Create new 5GTANGO project")
+def parse_args_project(input_args=None):
+    parser = argparse.ArgumentParser(description="5GTANGO SDK project")
     parser.add_argument("-p", "--project",
                         help="create a new project at the specified location",
                         required=True)
@@ -451,12 +455,15 @@ def parse_args_project():
                         required=False,
                         action="store_true")
 
-    return parser, parser.parse_args()
+    if input_args is None:
+        input_args = sys.argv[1:]
+    return parser.parse_args(input_args)
 
 
 # create and return project
-def create_project():
-    parser, args = parse_args_project()
+def create_project(args=None):
+    if args is None:
+        args = parse_args_project()
 
     if args.debug:
         coloredlogs.install(level='DEBUG')

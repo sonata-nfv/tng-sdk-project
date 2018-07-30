@@ -377,7 +377,7 @@ class Workspace:
             and self.config == other.config
 
 
-def parse_args_workspace():
+def parse_args_workspace(input_args=None):
     parser = argparse.ArgumentParser(description="Create a new workspace")
 
     parser.add_argument(
@@ -392,12 +392,15 @@ def parse_args_workspace():
         required=False,
         action="store_true")
 
-    return parser.parse_args()
+    if input_args is None:
+        input_args = sys.argv[1:]
+    return parser.parse_args(input_args)
 
 
 # for entry point tng-workspace; was as "tng-project --init" before
-def init_workspace():
-    args = parse_args_workspace()
+def init_workspace(args=None):
+    if args is None:
+        args = parse_args_workspace()
 
     log_level = "INFO"
     if args.debug:
