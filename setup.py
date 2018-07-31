@@ -33,7 +33,7 @@
 from setuptools import setup, find_packages
 
 
-setup(name='tng-project',
+setup(name='tngsdk.project',
       license='Apache License, Version 2.0',
       version='0.9',
       url='https://github.com/sonata-nfv/tng-sdk-project',
