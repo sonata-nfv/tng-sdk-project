@@ -39,12 +39,13 @@ import copy
 import os
 import logging
 import coloredlogs
+import sys
 
 
 log = logging.getLogger(__name__)
 
 
-def parse_args():
+def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description='Generate NSD and VNFDs')
     parser.add_argument('-o', help='set relative output path',
                         required=False, default='.', dest='out_path')
@@ -66,7 +67,9 @@ def parse_args():
     parser.add_argument('--vnfs', help='set a specific number of VNFs',
                         required=False, default=1, dest='vnfs')
 
-    return parser.parse_args()
+    if input_args is None:
+        input_args = sys.argv[1:]
+    return parser.parse_args(input_args)
 
 
 # generate 5GTANGO descriptors from the provided high-level arguments
@@ -256,8 +259,10 @@ def save_descriptors(nsd, vnfds, flavor, folder='.'):
             yaml.dump(vnf, f, default_flow_style=False)
 
 
-def generate():
-    args = parse_args()
+def generate(args=None):
+    if args is None:
+        args = parse_args()
+
     if args.debug:
         coloredlogs.install(level='DEBUG')
     else:
