@@ -51,10 +51,87 @@ class TestDescriptorgenCLI:
         ])
         cli.generate(args)
 
-        # FIXME: check yaml values of both Tango and OSM descriptors
-        assert True
+        # check tango nsd and vnfd
+        with open(os.path.join('test-descriptorgen', 'tango_nsd.yml'), 'r') as f:
+            tango_nsd = yaml.load(f)
+            assert tango_nsd['author'] == 'test.author'
+            assert tango_nsd['vendor'] == 'test.vendor'
+            assert tango_nsd['name'] == 'test.service'
+            assert tango_nsd['description'] == 'test.description'
+            assert len(tango_nsd['network_functions']) == 1
+
+        with open(os.path.join('test-descriptorgen', 'tango_vnfd0.yml'), 'r') as f:
+            tango_vnfd = yaml.load(f)
+            assert tango_vnfd['author'] == 'test.author'
+            assert tango_vnfd['vendor'] == 'test.vendor'
+
+        # check osm nsd and vnfd
+        with open(os.path.join('test-descriptorgen', 'osm_nsd.yml'), 'r') as f:
+            osm_nsd = yaml.load(f)
+            assert osm_nsd['vendor'] == 'test.vendor'
+            assert osm_nsd['id'] == 'test.service'
+            assert osm_nsd['name'] == 'test.service'
+            assert osm_nsd['description'] == 'test.description'
+            assert len(osm_nsd['constituent-vnfd']) == 1
+
+        with open(os.path.join('test-descriptorgen', 'osm_vnfd0.yml'), 'r') as f:
+            osm_vnfd = yaml.load(f)
+            assert osm_vnfd['vnfd-catalog']['vnfd'][0]['vendor'] == 'test.vendor'
+
+        # clean up: remove test folder again
+        shutil.rmtree('test-descriptorgen')
+
+    # generate descriptors for service with multiple vnfs
+    @pytest.mark.parametrize('num_vnfs', [(2), (3), (4)])
+    def test_generate_multiple_descriptors(self, num_vnfs):
+        args = cli.parse_args([
+            '--vnfs', str(num_vnfs),
+            '-o', 'test-descriptorgen'
+        ])
+        cli.generate(args)
+
+        # check the NSDs
+        with open(os.path.join('test-descriptorgen', 'tango_nsd.yml'), 'r') as f:
+            tango_nsd = yaml.load(f)
+            assert len(tango_nsd['network_functions']) == num_vnfs
+
+        with open(os.path.join('test-descriptorgen', 'osm_nsd.yml'), 'r') as f:
+            osm_nsd = yaml.load(f)
+            assert len(osm_nsd['constituent-vnfd']) == num_vnfs
+
+        # check all vnfd files exist
+        for i in range(0, num_vnfs):
+            assert os.path.isfile(os.path.join('test-descriptorgen', 'tango_vnfd{}.yml'.format(i)))
+            assert os.path.isfile(os.path.join('test-descriptorgen', 'osm_vnfd{}.yml'.format(i)))
 
         shutil.rmtree('test-descriptorgen')
 
-    # TODO: generate multiple diff. #VNFs, check resulting file names
-    # TODO: generate only tango/osm descriptors; check file names
+    # generate only tango descriptors
+    def test_generate_tango_descriptors(self):
+        args = cli.parse_args([
+            '--tango',
+            '-o', 'test-descriptorgen'
+        ])
+        cli.generate(args)
+
+        assert os.path.isfile(os.path.join('test-descriptorgen', 'tango_nsd.yml'))
+        assert os.path.isfile(os.path.join('test-descriptorgen', 'tango_vnfd0.yml'))
+        assert not os.path.isfile(os.path.join('test-descriptorgen', 'osm_nsd.yml'))
+        assert not os.path.isfile(os.path.join('test-descriptorgen', 'osm_vnfd0.yml'))
+
+        shutil.rmtree('test-descriptorgen')
+
+    # generate only osm descriptors
+    def test_generate_osm_descriptors(self):
+        args = cli.parse_args([
+            '--osm',
+            '-o', 'test-descriptorgen'
+        ])
+        cli.generate(args)
+
+        assert os.path.isfile(os.path.join('test-descriptorgen', 'osm_nsd.yml'))
+        assert os.path.isfile(os.path.join('test-descriptorgen', 'osm_vnfd0.yml'))
+        assert not os.path.isfile(os.path.join('test-descriptorgen', 'tango_nsd.yml'))
+        assert not os.path.isfile(os.path.join('test-descriptorgen', 'tango_vnfd0.yml'))
+
+        shutil.rmtree('test-descriptorgen')
