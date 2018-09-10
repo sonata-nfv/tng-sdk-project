@@ -10,7 +10,7 @@ The seed code of this component is based on the `son-cli` toolbox that was devel
 
 ## Installation
 
-Requires Python 3.5+ and `setuptools`. *Note:* The package name changed from `tngsdk.project` to `tng-project`, so make sure to uninstall the old package with `pip uninstall tngsdk.project`.
+Requires Python 3.5+ and `setuptools`.
 
 For simple, automatic installation and usage:
 
