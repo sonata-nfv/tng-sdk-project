@@ -398,6 +398,7 @@ class Project:
 def parse_args_project(input_args=None):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description="5GTANGO SDK project")
+    # project CLI
     parser.add_argument("-p", "--project",
                         help="create a new project at the specified location",
                         required=True)
@@ -461,7 +462,7 @@ def parse_args_project(input_args=None):
     parser.add_argument("--dump-swagger-path",
                         help="Path to dump Swagger JSON using --dump-swagger",
                         required=False,
-                        default="doc/rest_api_model.json",
+                        default="docs/rest_api.json",
                         dest="dump_swagger_path")
 
     parser.add_argument("--address",
@@ -497,10 +498,16 @@ def create_project(args=None, extra_args=None):
         log.debug("Passing these parameters to descriptorgen: {}".format(extra_args))
         dgn_args = descriptorgen.parse_args(extra_args)
 
+    # dump Swagger REST API specification
+    if args.dump_swagger:
+        rest.dump_swagger(args)
+        log.info("Dumped Swagger API spec to {}".format(args.dump_swagger_path))
+        exit(0)
+
     # start service with REST API (instead of using CLI)
     if args.service:
         rest.serve_forever(args)
-        return
+        exit(0)
 
     # use specified workspace or default
     if args.workspace:
