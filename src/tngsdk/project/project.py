@@ -45,6 +45,7 @@ import coloredlogs
 from collections import defaultdict
 from tabulate import tabulate
 from tngsdk.project.workspace import Workspace
+from tngsdk.descriptorgen import descriptorgen
 
 
 log = logging.getLogger(__name__)
@@ -104,7 +105,8 @@ class Project:
             'files': []
         }
 
-    def create_prj(self, empty=False):
+    # create new project (empty or with descriptors by descriptorgen)
+    def create_prj(self, empty=False, dgn_args=None):
         # create project root directory (if it doesn't exist)
         log.info('Creating project at {}'.format(self._prj_root))
         if os.path.isdir(self._prj_root):
@@ -117,9 +119,17 @@ class Project:
         if empty:
             log.debug('Creating empty project (no folders or sample files)')
         else:
-            self._create_dirs()
+            self._gen_descriptors(dgn_args)
         self._write_prj_yml()
 
+    # generate descriptors using the descriptorgen module and specified args
+    def _gen_descriptors(self, dgn_args):
+        dgn_args.out_path = self._prj_root
+        log.info("Generating descriptors")
+        log.debug("Descriptor generation args: {}".format(dgn_args))
+        descriptorgen.generate(dgn_args)
+
+    # TODO: delete creation of old sample descriptors
     # creates directory tree of the project and sample descriptors
     def _create_dirs(self):
         directories = {'sources', 'dependencies', 'deployment'}
@@ -158,6 +168,8 @@ class Project:
         srcfile = pkg_resources.resource_filename(rp, src_path)
         shutil.copyfile(srcfile, nsd_path)
         self.add_file(nsd_path)
+
+
 
     # writes project descriptor to file (project.yml)
     def _write_prj_yml(self):
@@ -457,18 +469,25 @@ def parse_args_project(input_args=None):
 
     if input_args is None:
         input_args = sys.argv[1:]
-    return parser.parse_args(input_args)
+    return parser.parse_known_args(input_args)
 
 
 # create and return project
 def create_project(args=None):
+    unknown = None
     if args is None:
-        args = parse_args_project()
+        args, unknown = parse_args_project()
 
     if args.debug:
         coloredlogs.install(level='DEBUG')
     else:
         coloredlogs.install(level='INFO')
+
+    # pass unknown arguments to descriptorgen (to check if descriptorgen knows them)
+    dgn_args = None
+    if unknown is not None:
+        log.debug("Passing these parameters to descriptorgen: {}".format(unknown))
+        dgn_args = descriptorgen.parse_args(unknown)
 
     # use specified workspace or default
     if args.workspace:
@@ -510,7 +529,7 @@ def create_project(args=None):
         # create project
         log.debug("Attempting to create a new project")
         proj = Project(ws, prj_root)
-        proj.create_prj(args.empty)
+        proj.create_prj(args.empty, dgn_args)
         log.debug("Project created.")
 
     return proj
