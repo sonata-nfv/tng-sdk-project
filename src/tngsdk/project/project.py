@@ -46,6 +46,7 @@ from collections import defaultdict
 from tabulate import tabulate
 from tngsdk.project.workspace import Workspace
 from tngsdk.descriptorgen import descriptorgen
+from tngsdk import rest
 
 
 log = logging.getLogger(__name__)
@@ -395,7 +396,8 @@ class Project:
 
 
 def parse_args_project(input_args=None):
-    parser = argparse.ArgumentParser(description="5GTANGO SDK project")
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description="5GTANGO SDK project")
     parser.add_argument("-p", "--project",
                         help="create a new project at the specified location",
                         required=True)
@@ -441,6 +443,39 @@ def parse_args_project(input_args=None):
                         required=False,
                         action="store_true")
 
+    # service management
+    parser.add_argument("-s", "--service",
+                        help="Run tng-project in service mode with REST API.",
+                        required=False,
+                        default=False,
+                        dest="service",
+                        action="store_true")
+
+    parser.add_argument("--dump-swagger",
+                        help="Dump Swagger JSON of REST API and exit",
+                        required=False,
+                        default=False,
+                        dest="dump_swagger",
+                        action="store_true")
+
+    parser.add_argument("--dump-swagger-path",
+                        help="Path to dump Swagger JSON using --dump-swagger",
+                        required=False,
+                        default="doc/rest_api_model.json",
+                        dest="dump_swagger_path")
+
+    parser.add_argument("--address",
+                        help="Listen address of REST API when in service mode.",
+                        required=False,
+                        default="localhost",
+                        dest="service_address")
+
+    parser.add_argument("--port",
+                        help="TCP port of REST API when in service mode.",
+                        required=False,
+                        default=5098,
+                        dest="service_port")
+
     if input_args is None:
         input_args = sys.argv[1:]
     return parser.parse_known_args(input_args)
@@ -461,6 +496,11 @@ def create_project(args=None, extra_args=None):
     if extra_args is not None:
         log.debug("Passing these parameters to descriptorgen: {}".format(extra_args))
         dgn_args = descriptorgen.parse_args(extra_args)
+
+    # start service with REST API (instead of using CLI)
+    if args.service:
+        rest.serve_forever(args)
+        return
 
     # use specified workspace or default
     if args.workspace:
