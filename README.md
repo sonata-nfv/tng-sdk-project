@@ -61,7 +61,16 @@ $ tng-project -p path/to/old-project --translate   # translates the project to t
 ### Descriptor generation (CLI)
 This tool also includes a CLI for descriptor generation. 
 Its functionality is mostly consistent with the [GUI version](https://github.com/sonata-nfv/tng-sdk-descriptorgen) but my be preferrable to advanced users.
-It can be used as follows:
+
+The descriptor generator is integrated in the project management tool 
+such that additional arguments are passed to the descriptor generator
+and are used to generate suitable descriptors in a new project:
+
+```bash
+$ tng-project -p path/to/project --author abc --vnfs 3   # creates a new project with descriptors for 3 VNFs and the specified author
+```
+
+The descriptorgen CLI can also be used separately as follows:
 
 ```bash
 $ tng-descriptorgen --author author.name --vnfs 3   # generate NSD and VNFDs for service with 3 VNFs
