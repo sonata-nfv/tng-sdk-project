@@ -63,7 +63,10 @@ class TestProjectCLI:
         args, extra_ars = cli.parse_args_project([
             '-p', 'test-project',
             '-w', workspace,
-            '--debug'
+            '--debug',
+            '--author', 'test.author',
+            '--vendor', 'test.vendor',
+            '--vnfs', '2'
         ])
         project = cli.create_project(args, extra_ars)
         assert os.path.isdir('test-project')
@@ -71,7 +74,26 @@ class TestProjectCLI:
         yield project
         shutil.rmtree('test-project')
 
-    # TODO: add tests using descriptorgen
+    # check generated descriptors (integration with descriptorgen)
+    def test_generated_descriptors(self, project):
+        # test if all descriptors exist
+        assert os.path.isfile(os.path.join(project.project_root, 'tango_nsd.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'tango_vnfd0.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'tango_vnfd1.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'osm_nsd.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'osm_vnfd0.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'osm_vnfd1.yml'))
+
+        # test if fields are set correctly
+        with open(os.path.join(project.project_root, 'tango_nsd.yml'), 'r') as f:
+            tango_nsd = yaml.load(f)
+            assert tango_nsd['author'] == 'test.author'
+            assert tango_nsd['vendor'] == 'test.vendor'
+            assert len(tango_nsd['network_functions']) == 2
+        with open(os.path.join(project.project_root, 'osm_nsd.yml'), 'r') as f:
+            osm_nsd = yaml.load(f)
+            assert osm_nsd['vendor'] == 'test.vendor'
+            assert len(osm_nsd['constituent-vnfd']) == 2
 
     # add a file to the test project
     def test_add_remove_file(self, workspace, project):
