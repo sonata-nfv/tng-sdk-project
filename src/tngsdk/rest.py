@@ -33,6 +33,7 @@
 import logging
 import subprocess
 import json
+import os
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
@@ -56,11 +57,11 @@ api.add_namespace(api_v1)
 # models for marshaling return values from the API
 # TODO: models (better to use marshmallow here?)
 
-def dump_swagger(args):
+def dump_swagger():
     # TODO replace this with the URL of a real tng-project service
     app.config.update(SERVER_NAME="tng-project.5gtango.eu")
     with app.app_context():
-        with open(args.dump_swagger_path, "w") as f:
+        with open(os.path.join("docs", "rest_api.json"), "w") as f:
             f.write(json.dumps(api.__schema__))
 
 

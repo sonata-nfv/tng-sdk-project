@@ -459,12 +459,6 @@ def parse_args_project(input_args=None):
                         dest="dump_swagger",
                         action="store_true")
 
-    parser.add_argument("--dump-swagger-path",
-                        help="Path to dump Swagger JSON using --dump-swagger",
-                        required=False,
-                        default="docs/rest_api.json",
-                        dest="dump_swagger_path")
-
     parser.add_argument("--address",
                         help="Listen address of REST API when in service mode.",
                         required=False,
@@ -500,8 +494,8 @@ def create_project(args=None, extra_args=None):
 
     # dump Swagger REST API specification
     if args.dump_swagger:
-        rest.dump_swagger(args)
-        log.info("Dumped Swagger API spec to {}".format(args.dump_swagger_path))
+        rest.dump_swagger()
+        log.info("Dumped Swagger API spec to docs/rest_api.json")
         exit(0)
 
     # start service with REST API (instead of using CLI)
