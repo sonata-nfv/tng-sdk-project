@@ -129,47 +129,9 @@ class Project:
         log.debug("Descriptor generation args: {}".format(dgn_args))
         descriptorgen.generate(dgn_args)
 
-    # TODO: delete creation of old sample descriptors
-    # creates directory tree of the project and sample descriptors
-    def _create_dirs(self):
-        directories = {'sources', 'dependencies', 'deployment'}
-        for d in directories:
-            path = os.path.join(self._prj_root, d)
-            os.makedirs(path, exist_ok=True)
-
-        src_path = os.path.join(self._prj_root, 'sources')
-        vnfd_path = os.path.join(src_path, 'vnfd')
-        nsd_path = os.path.join(src_path, 'nsd')
-        os.makedirs(vnfd_path, exist_ok=True)
-        os.makedirs(nsd_path, exist_ok=True)
-        self._create_vnfd(vnfd_path)
-        self._create_nsd(nsd_path)
-
-    # create directory and sample VNFD
-    def _create_vnfd(self, path):
-        sample_vnfd = 'vnfd-sample.yml'
-        vnfd_path = os.path.join(path, sample_vnfd)
-        rp = __name__
-
-        # Copy sample VNF descriptor
-        src_path = os.path.join('samples', sample_vnfd)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, vnfd_path)
-        self.add_file(vnfd_path)
-
-    # create NSD
-    def _create_nsd(self, path):
-        sample_nsd = 'nsd-sample.yml'
-        nsd_path = os.path.join(path, sample_nsd)
-        rp = __name__
-
-        # Copy sample NS descriptor
-        src_path = os.path.join('samples', sample_nsd)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, nsd_path)
-        self.add_file(nsd_path)
-
-
+        # add generated files to project manifest
+        log.debug("Adding generated descriptors to project manifest")
+        self.add_file(os.path.join(self._prj_root, "*"))
 
     # writes project descriptor to file (project.yml)
     def _write_prj_yml(self):
@@ -186,6 +148,7 @@ class Project:
             if remove:
                 self.remove_file(f)
 
+    # FIXME: mime type of generated OSM descriptors
     # detects and returns MIME type of specified file
     def mime_type(self, file):
         name, extension = os.path.splitext(file)
