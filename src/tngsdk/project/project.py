@@ -148,7 +148,6 @@ class Project:
             if remove:
                 self.remove_file(f)
 
-    # FIXME: mime type of generated OSM descriptors
     # detects and returns MIME type of specified file
     def mime_type(self, file):
         name, extension = os.path.splitext(file)
@@ -159,6 +158,11 @@ class Project:
                 yml_file = yaml.load(yml_file)
                 if 'descriptor_schema' in yml_file:
                     type = self.type_mapping[yml_file['descriptor_schema']]
+                # try to detect OSM descriptors based on field names
+                elif 'constituent-vnfd' in yml_file and 'vld' in yml_file:
+                    type = 'application/vnd.etsi.osm.nsd'
+                elif 'vnfd-catalog' in yml_file:
+                    type = 'application/vnd.etsi.osm.vnfd'
                 else:
                     log.warning('Could not detect MIME type of {}. '
                                 'Using text/yaml'.format(file))
@@ -188,6 +192,13 @@ class Project:
                       'the -t argument.'.format(file_path))
             return
 
+        # set tags accordingly
+        tags = []
+        if '5gtango' in type:
+            tags = ['eu.5gtango']
+        elif 'osm' in type:
+            tags = ['etsi.osm']
+
         # calculate relative file path to project root
         abs_file_path = os.path.abspath(file_path)
         abs_prj_root = os.path.abspath(self._prj_root)
@@ -198,7 +209,7 @@ class Project:
             log.debug('Adjusted Windows path in project.yml: {}'.format(rel_file_path))
 
         # add to project.yml
-        file = {'path': rel_file_path, 'type': type, 'tags': ['eu.5gtango']}
+        file = {'path': rel_file_path, 'type': type, 'tags': tags}
         if file in self._prj_config['files']:
             log.warning('{} is already in project.yml.'.format(file_path))
         else:
