@@ -447,21 +447,20 @@ def parse_args_project(input_args=None):
 
 
 # create and return project
-def create_project(args=None):
-    unknown = None
+def create_project(args=None, extra_args=None):
     if args is None:
-        args, unknown = parse_args_project()
+        args, extra_args = parse_args_project()
 
     if args.debug:
         coloredlogs.install(level='DEBUG')
     else:
         coloredlogs.install(level='INFO')
 
-    # pass unknown arguments to descriptorgen (to check if descriptorgen knows them)
+    # pass extra_args arguments to descriptorgen (to check if descriptorgen knows them)
     dgn_args = None
-    if unknown is not None:
-        log.debug("Passing these parameters to descriptorgen: {}".format(unknown))
-        dgn_args = descriptorgen.parse_args(unknown)
+    if extra_args is not None:
+        log.debug("Passing these parameters to descriptorgen: {}".format(extra_args))
+        dgn_args = descriptorgen.parse_args(extra_args)
 
     # use specified workspace or default
     if args.workspace:
