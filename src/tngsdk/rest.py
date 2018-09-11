@@ -75,7 +75,6 @@ def serve_forever(args, debug=True):
 
 @api_v1.route("/pings")
 class Ping(Resource):
-    # @api_v1.marshal_with(ping_get_return_model)
     def get(self):
         ut = None
         try:
@@ -83,3 +82,14 @@ class Ping(Resource):
         except BaseException as e:
             log.warning(str(e))
         return {"alive_since": ut}
+
+
+@api_v1.route("/projects")
+class Projects(Resource):
+    def get(self):
+        pass
+        # TODO: return list of projects
+
+    def post(self):
+        pass
+        # TODO: add new project
