@@ -30,8 +30,13 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 
+import os
 from setuptools import setup, find_packages
 
+
+cwd = os.path.dirname(__file__)
+with open(os.path.join(cwd, 'requirements.txt')) as f:
+    requirements = f.read().splitlines()
 
 setup(name='tngsdk.project',
       license='Apache License, Version 2.0',
@@ -42,7 +47,7 @@ setup(name='tngsdk.project',
       package_dir={'': 'src'},
       packages=find_packages('src'),   # dependency resolution
       include_package_data=True,       # package data specified in MANIFEST.in
-      install_requires=['PyYAML', 'pytest', 'pyaml', 'oyaml', 'coloredlogs', 'tabulate'],
+      install_requires=requirements,
       zip_safe=False,
       entry_points={
           'console_scripts': [

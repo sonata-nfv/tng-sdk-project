@@ -1,0 +1,9 @@
+pytest
+pyaml
+oyaml
+coloredlogs
+tabulate
+requests
+flask
+werkzeug
+flask-restplus
