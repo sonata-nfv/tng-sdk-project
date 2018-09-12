@@ -95,8 +95,10 @@ class Ping(Resource):
 @api_v1.route("/projects")
 class Projects(Resource):
     def get(self):
-        pass
-        # TODO: return list of projects
+        log.info("GET to /projects. Loading available projects")
+        project_dirs = [name for name in os.listdir('projects') if os.path.isdir(os.path.join('projects', name))]
+        return {'projects': project_dirs}
+    # TODO: check UUID in project manifest? should be consistent to project dir name anyways
 
     def post(self):
         # args = parser.parse_args()
