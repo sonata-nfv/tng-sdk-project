@@ -1,3 +1,5 @@
+projects/
+
 .pytest_cache
 reports/
 .idea/

@@ -34,6 +34,7 @@ import logging
 import subprocess
 import json
 import os
+import uuid
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
@@ -53,15 +54,16 @@ api.add_namespace(api_v1)
 
 
 # parser arguments: for input parameters sent to the API
-parser = api_v1.parser()
-parser.add_argument("filename",
-                    location="form",
-                    required=True,
-                    help="Project name (no whitespaces)")
+# parser = api_v1.parser()
+# parser.add_argument("filename",
+#                     location="form",
+#                     required=True,
+#                     help="Project name (no whitespaces)")
 # TODO: make optional and create projects using uuid
 
 # models for marshaling return values from the API
 # TODO: models (better to use marshmallow here?)
+
 
 def dump_swagger():
     # TODO replace this with the URL of a real tng-project service
@@ -96,14 +98,14 @@ class Projects(Resource):
         pass
         # TODO: return list of projects
 
-    @api_v1.expect(parser)
     def post(self):
-        args = parser.parse_args()
-        log.info("POST to /projects with args: {}".format(args))
+        # args = parser.parse_args()
+        log.info("POST to /projects")
+        new_uuid = str(uuid.uuid4())
         cli_args, extra_ars = cli.parse_args_project([
-            '-p', os.path.join('projects', args['filename'])
+            '-p', os.path.join('projects', new_uuid)
         ])
-        project = cli.create_project(cli_args, extra_ars)
+        project = cli.create_project(cli_args, extra_ars, fixed_uuid=new_uuid)
 
-        return {'project_root': project.project_root}
+        return {'uuid': project.uuid}
 

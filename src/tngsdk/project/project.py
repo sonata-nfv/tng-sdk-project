@@ -56,8 +56,11 @@ class Project:
 
     __descriptor_name__ = 'project.yml'
 
-    def __init__(self, workspace, prj_root, config=None):
-        self.uuid = str(uuid.uuid4())
+    def __init__(self, workspace, prj_root, config=None, fixed_uuid=None):
+        if fixed_uuid is not None:
+            self.uuid = fixed_uuid
+        else:
+            self.uuid = str(uuid.uuid4())
         self._prj_root = prj_root
         self._workspace = workspace
         if config:
@@ -383,7 +386,6 @@ class Project:
 def parse_args_project(input_args=None):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description="5GTANGO SDK project")
-    # TODO: ensure the correct arguemtns are used
     # project CLI
     parser.add_argument("-p", "--project",
                         help="create a new project at the specified location",
@@ -464,7 +466,7 @@ def parse_args_project(input_args=None):
 
 
 # create and return project
-def create_project(args=None, extra_args=None):
+def create_project(args=None, extra_args=None, fixed_uuid=None):
     if args is None:
         args, extra_args = parse_args_project()
 
@@ -529,7 +531,7 @@ def create_project(args=None, extra_args=None):
     else:
         # create project
         log.debug("Attempting to create a new project")
-        proj = Project(ws, prj_root)
+        proj = Project(ws, prj_root, fixed_uuid=fixed_uuid)
         proj.create_prj(args.empty, dgn_args)
         log.debug("Project created.")
 
