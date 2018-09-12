@@ -38,6 +38,7 @@ import shutil
 import yaml
 import tngsdk.project.workspace as workspace
 import tngsdk.project.project as cli
+from tngsdk.project.project import Project
 
 
 class TestProjectCLI:
@@ -73,6 +74,16 @@ class TestProjectCLI:
         assert os.path.isfile(os.path.join('test-project', 'project.yml'))
         yield project
         shutil.rmtree('test-project')
+
+    # load example-project: ensure loading works and example is up-to-date
+    def test_load_example_project(self, capsys):
+        project = Project.load_project('example-project')
+        project.status()
+
+        # assert that the status is printed correctly
+        stdout = capsys.readouterr().out
+        assert all(x in stdout for x in ['Project:', 'Vendor:', 'Version:', 'UUID:'])
+        assert all(x in stdout for x in ['MIME type', 'Quantity'])
 
     # check generated descriptors (integration with descriptorgen)
     def test_generated_descriptors(self, project):
