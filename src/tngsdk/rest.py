@@ -35,6 +35,7 @@ import subprocess
 import json
 import os
 import uuid
+import shutil
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
@@ -127,3 +128,15 @@ class Project(Resource):
 
         project = cli.Project.load_project(project_path)
         return {"uuid": project.uuid, "manifest": project.project_config}
+
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project not found")
+    def delete(self, project_uuid):
+        log.info("DELETE to /projects/{}".format(project_uuid))
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+
+        shutil.rmtree(project_path)
+        return {"uuid": project_uuid}
