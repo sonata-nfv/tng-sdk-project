@@ -94,12 +94,14 @@ class Ping(Resource):
 
 @api_v1.route("/projects")
 class Projects(Resource):
+    @api_v1.response(200, 'OK')
     def get(self):
         log.info("GET to /projects. Loading available projects")
         project_dirs = [name for name in os.listdir('projects') if os.path.isdir(os.path.join('projects', name))]
         return {'projects': project_dirs}
     # TODO: check UUID in project manifest? should be consistent to project dir name anyways
 
+    @api_v1.response(200, 'OK')
     def post(self):
         # args = parser.parse_args()
         log.info("POST to /projects")
@@ -111,3 +113,17 @@ class Projects(Resource):
 
         return {'uuid': project.uuid}
 
+
+@api_v1.route("/projects/<string:project_uuid>")
+class Project(Resource):
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project not found")
+    def get(self, project_uuid):
+        log.info("GET to /projects/{}".format(project_uuid))
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+
+        project = cli.Project.load_project(project_path)
+        return {"uuid": project.uuid, "manifest": project.project_config}
