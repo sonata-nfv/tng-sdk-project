@@ -247,7 +247,7 @@ class Project:
         log.warning('{} is not in project.yml'.format(file_path))
 
     # prints project info/status
-    def project_status(self):
+    def status(self):
         # print general info
         print('Project: {}'.format(self._prj_config['package']['name']))
         print('Vendor: {}'.format(self._prj_config['package']['vendor']))
@@ -342,7 +342,12 @@ class Project:
 
     # loads a project using its project manifest (project.yml)
     @staticmethod
-    def __create_from_descriptor__(workspace, prj_root, translate=False):
+    def load_project(prj_root, workspace=None, translate=False):
+        # load default workspace if none specified
+        if workspace is None:
+            workspace = Workspace.load_workspace(Workspace.DEFAULT_WORKSPACE_DIR)
+
+        # check if project manifest exists
         prj_filename = os.path.join(prj_root, Project.__descriptor_name__)
         if not os.path.isdir(prj_root) or not os.path.isfile(prj_filename):
             log.error("Unable to load project manifest '{}'".format(prj_filename))
@@ -491,7 +496,7 @@ def create_project(args=None, extra_args=None):
     else:
         ws_root = Workspace.DEFAULT_WORKSPACE_DIR
 
-    ws = Workspace.__create_from_descriptor__(ws_root)
+    ws = Workspace.load_workspace(ws_root)
     if not ws:
         print("Could not find a 5GTANGO workspace at the specified location",
               file=sys.stderr)
@@ -502,23 +507,23 @@ def create_project(args=None, extra_args=None):
     if args.add:
         # load project and add file to project.yml
         log.debug("Attempting to add file {}".format(args.add))
-        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj = Project.load_project(prj_root, ws)
         proj.add_file(args.add, type=args.type)
 
     elif args.remove:
         # load project and remove file from project.yml
         log.debug("Attempting to remove file {}".format(args.remove))
-        proj = Project.__create_from_descriptor__(ws, prj_root)
+        proj = Project.load_project(prj_root, ws)
         proj.remove_file(args.remove)
 
     elif args.status:
         # load project and show status
         log.debug("Attempting to show project status")
-        proj = Project.__create_from_descriptor__(ws, prj_root)
-        proj.project_status()
+        proj = Project.load_project(prj_root, ws)
+        proj.status()
 
     elif args.translate:
-        proj = Project.__create_from_descriptor__(ws, prj_root, translate=True)
+        proj = Project.load_project(prj_root, ws, translate=True)
         proj.translate()
 
     else:
