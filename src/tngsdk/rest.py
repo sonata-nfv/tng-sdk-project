@@ -37,6 +37,7 @@ import os
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
+import tngsdk.project.project as cli
 
 
 log = logging.getLogger(__name__)
@@ -52,7 +53,12 @@ api.add_namespace(api_v1)
 
 
 # parser arguments: for input parameters sent to the API
-# TODO: parser arguments
+parser = api_v1.parser()
+parser.add_argument("filename",
+                    location="form",
+                    required=True,
+                    help="Project name (no whitespaces)")
+# TODO: make optional and create projects using uuid
 
 # models for marshaling return values from the API
 # TODO: models (better to use marshmallow here?)
@@ -90,6 +96,14 @@ class Projects(Resource):
         pass
         # TODO: return list of projects
 
+    @api_v1.expect(parser)
     def post(self):
-        pass
-        # TODO: add new project
+        args = parser.parse_args()
+        log.info("POST to /projects with args: {}".format(args))
+        cli_args, extra_ars = cli.parse_args_project([
+            '-p', os.path.join('projects', args['filename'])
+        ])
+        project = cli.create_project(cli_args, extra_ars)
+
+        return {'project_root': project.project_root}
+

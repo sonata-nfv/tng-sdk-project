@@ -28,7 +28,8 @@ $ python setup.py install
 
 ## Usage
 
-### Workspace
+### CLI
+#### Workspace
 To start working, you need a workspace that holds your configuration files. The default location is `~/.tng-workspace/`, but it may be at any location and there can also be multiple workspaces.
 
 ```bash
@@ -36,7 +37,7 @@ $ tng-workspace       # initializes a new workspace at the default location
 $ tng-workspace --workspace path/to/workspace     # inits a workspace at a custom location
 ```
 
-### Project managament
+#### Project managament
 Once you have a workspace, you can create projects with the `tng-project` command.
 You can also add or remove files from the project (wildcards allowed) or check the project status.
 
@@ -58,7 +59,7 @@ For more information see the [corresponding wiki page](https://github.com/sonata
 $ tng-project -p path/to/old-project --translate   # translates the project to the new structure
 ```
 
-### Descriptor generation (CLI)
+#### Descriptor generation (CLI)
 This tool also includes a CLI for descriptor generation. 
 Its functionality is mostly consistent with the [GUI version](https://github.com/sonata-nfv/tng-sdk-descriptorgen) but my be preferrable to advanced users.
 
@@ -79,6 +80,22 @@ $ tng-descriptorgen --osm -o osm-project            # generate only OSM descript
 ```
 
 For more information, use `tng-descriptorgen -h`.
+
+
+### Service mode with REST API
+
+TODO: How to run as Docker container
+
+```bash
+# terminal 1
+$ tng-project -s    # starts the tool in service mode (running forever)
+```
+
+```bash
+# terminal 2
+$ curl -X POST localhost:5098/api/v1/projects -d filename=new-project  # create a new project
+```
+TODO: what about application/json requests?
 
 ## Documentation
 

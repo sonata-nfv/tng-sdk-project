@@ -398,10 +398,12 @@ class Project:
 def parse_args_project(input_args=None):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description="5GTANGO SDK project")
+    # TODO: ensure the correct arguemtns are used
     # project CLI
     parser.add_argument("-p", "--project",
                         help="create a new project at the specified location",
-                        required=True)
+                        required=False,
+                        default='new-project')
 
     parser.add_argument("-w", "--workspace",
                         help="location of existing (or new) workspace. "
@@ -414,7 +416,7 @@ def parse_args_project(input_args=None):
                         required=False,
                         action="store_true")
 
-    parser.add_argument("--debug",
+    parser.add_argument("-v", "--debug",
                         help="increases logging level to debug",
                         required=False,
                         action="store_true")
