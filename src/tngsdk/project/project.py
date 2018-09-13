@@ -63,6 +63,7 @@ class Project:
             self.uuid = str(uuid.uuid4())
         self._prj_root = prj_root
         self._workspace = workspace
+        self.error_msg = None
         if config:
             self._prj_config = config
             if 'uuid' in config['package']:
@@ -195,9 +196,9 @@ class Project:
         if type is None:
             type = self.mime_type(file_path)
         if type is None:
-            log.error('Could not detect MIME type of {}. Please specify using'
-                      'the -t argument.'.format(file_path))
-            return
+            log.warning('Could not detect MIME type of {}. Using "application/octet-stream".'.format(file_path))
+            self.error_msg = 'Could not detect MIME type of {}. Using "application/octet-stream".'.format(file_path)
+            type = "application/octet-stream"       # default MIME type
 
         # set tags accordingly
         tags = []

@@ -39,6 +39,7 @@ import shutil
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.datastructures import FileStorage
 import tngsdk.project.project as cli
 
 
@@ -55,12 +56,17 @@ api.add_namespace(api_v1)
 
 
 # parser arguments: for input parameters sent to the API
-# parser = api_v1.parser()
-# parser.add_argument("filename",
-#                     location="form",
-#                     required=True,
-#                     help="Project name (no whitespaces)")
-# TODO: make optional and create projects using uuid
+parser = api_v1.parser()
+parser.add_argument("file",
+                    location="files",
+                    type=FileStorage,
+                    required=True,
+                    help="Uploaded file to add to project")
+parser.add_argument("file_type",
+                    location="form",
+                    required=False,
+                    default=None,
+                    help="MIME type of an uploaded file")
 
 # models for marshaling return values from the API
 # TODO: models (better to use marshmallow here?)
@@ -85,12 +91,12 @@ def serve_forever(args, debug=True):
 @api_v1.route("/pings")
 class Ping(Resource):
     def get(self):
-        ut = None
+        uptime = None
         try:
-            ut = str(subprocess.check_output("uptime")).strip()
+            uptime = str(subprocess.check_output("uptime")).strip()
         except BaseException as e:
             log.warning(str(e))
-        return {"alive_since": ut}
+        return {"alive_since": uptime}
 
 
 @api_v1.route("/projects")
@@ -112,7 +118,7 @@ class Projects(Resource):
         ])
         project = cli.create_project(cli_args, extra_ars, fixed_uuid=new_uuid)
 
-        return {'uuid': project.uuid}
+        return {'uuid': project.uuid, "error_msg": project.error_msg}
 
 
 @api_v1.route("/projects/<string:project_uuid>")
@@ -127,7 +133,7 @@ class Project(Resource):
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
         project = cli.Project.load_project(project_path)
-        return {"uuid": project.uuid, "manifest": project.project_config}
+        return {"uuid": project.uuid, "manifest": project.project_config, "error_msg": project.error_msg}
 
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
@@ -140,3 +146,46 @@ class Project(Resource):
 
         shutil.rmtree(project_path)
         return {"uuid": project_uuid}
+
+
+@api_v1.route("/projects/<string:project_uuid>/files")
+class ProjectFiles(Resource):
+    # get list of project files
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project not found")
+    def get(self, project_uuid):
+        log.info("GET to /projects/{}/files".format(project_uuid))
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+
+        project = cli.Project.load_project(project_path)
+        return {"uuid": project.uuid, "files": project.project_config["files"]}
+
+    # add an uploaded file to the project
+    @api_v1.expect(parser)
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project not found")
+    def post(self, project_uuid):
+        args = parser.parse_args()
+        log.info("POST to /projects/{}/files with args: {}".format(project_uuid, args))
+
+        # try to load the project
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+        project = cli.Project.load_project(project_path)
+
+        # check if file already exists
+        file = args["file"]
+        if os.path.isfile(os.path.join(project_path, file.filename)):
+            log.warning("Overriding existing file {}".format(file.filename))
+
+        # save uploaded file to project and add to project manifest
+        log.debug("Adding uploaded file {} to project with UUID {}".format(file.filename, project.uuid))
+        file.save(os.path.join(project_path, file.filename))
+        project.add_file(os.path.join(project_path, file.filename), args["file_type"])
+
+        return {"project_uuid": project.uuid, "filename": file.filename, "error_msg": project.error_msg}
