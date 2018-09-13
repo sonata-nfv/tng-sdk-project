@@ -36,7 +36,8 @@ import json
 import os
 import uuid
 import shutil
-from flask import Flask, Blueprint
+import zipfile
+from flask import Flask, Blueprint, send_from_directory
 from flask_restplus import Resource, Api, Namespace
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.datastructures import FileStorage
@@ -68,8 +69,8 @@ file_upload_parser.add_argument("file_type",
                                 default=None,
                                 help="MIME type of an uploaded file")
 
-file_remove_parser = api_v1.parser()
-file_remove_parser.add_argument("filename", location="form", required=True, help="Filename of the file to remove")
+filename_parser = api_v1.parser()
+filename_parser.add_argument("filename", location="form", required=True, help="Filename of the file to remove")
 
 # models for marshaling return values from the API
 # TODO: models (better to use marshmallow here?)
@@ -194,11 +195,11 @@ class ProjectFiles(Resource):
         return {"project_uuid": project.uuid, "filename": file.filename, "error_msg": project.error_msg}
 
     # remove an existing file from a project
-    @api_v1.expect(file_remove_parser)
+    @api_v1.expect(filename_parser)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project or file not found")
     def delete(self, project_uuid):
-        args = file_remove_parser.parse_args()
+        args = filename_parser.parse_args()
         log.info("DELETE to /projects/{}/files with args: {}".format(project_uuid, args))
 
         # try to load the project
@@ -218,3 +219,31 @@ class ProjectFiles(Resource):
         project.remove_file(os.path.join(project_path, filename))
         os.remove(os.path.join(project_path, filename))
         return {"project_uuid": project.uuid, "removed_file": filename, "error_msg": project.error_msg}
+
+
+# TODO: do we even need this if we have the packager?
+@api_v1.route("/projects/<string:project_uuid>/download")
+class ProjectDownload(Resource):
+    # download the specified project as zip file
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project not found")
+    def get(self, project_uuid):
+        log.info("GET to /projects/{}/download".format(project_uuid))
+
+        # try to load the project
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+        project = cli.Project.load_project(project_path)
+
+        # zip the project
+        zip_path = os.path.join('projects', project.uuid + '.zip')
+        zipped_project = zipfile.ZipFile(zip_path, 'w')
+        for root, dirs, files in os.walk(project_path):
+            for f in files:
+                zipped_project.write(os.path.join(root, f), os.path.relpath(os.path.join(root, f), 'projects'))
+        zipped_project.close()
+
+        # TODO: return the zipped project; async?
+        return "not implemented", 501
