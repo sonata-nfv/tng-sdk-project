@@ -110,6 +110,8 @@ $ curl -X POST localhost:5098/api/v1/projects/{uuid}/files \
 $ curl -X POST localhost:5098/api/v1/projects/{uuid}/files \
     -H "Content-Type: multipart/form-data" \
     -F file="@LICENSE" -F file_type="text/plain"            # add new file with specific MIME type
+$ curl -X DELETE localhost:5098/api/v1/projects/{uuid}/files \
+    -d filename="requirements.txt"                          # remove the specified file
 ```
 
 TODO: Link to Swagger spec

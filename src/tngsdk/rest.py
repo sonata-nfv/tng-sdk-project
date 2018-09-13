@@ -56,17 +56,20 @@ api.add_namespace(api_v1)
 
 
 # parser arguments: for input parameters sent to the API
-parser = api_v1.parser()
-parser.add_argument("file",
-                    location="files",
-                    type=FileStorage,
-                    required=True,
-                    help="Uploaded file to add to project")
-parser.add_argument("file_type",
-                    location="form",
-                    required=False,
-                    default=None,
-                    help="MIME type of an uploaded file")
+file_upload_parser = api_v1.parser()
+file_upload_parser.add_argument("file",
+                                location="files",
+                                type=FileStorage,
+                                required=True,
+                                help="Uploaded file to add to project")
+file_upload_parser.add_argument("file_type",
+                                location="form",
+                                required=False,
+                                default=None,
+                                help="MIME type of an uploaded file")
+
+file_remove_parser = api_v1.parser()
+file_remove_parser.add_argument("filename", location="form", required=True, help="Filename of the file to remove")
 
 # models for marshaling return values from the API
 # TODO: models (better to use marshmallow here?)
@@ -133,7 +136,7 @@ class Project(Resource):
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
         project = cli.Project.load_project(project_path)
-        return {"uuid": project.uuid, "manifest": project.project_config, "error_msg": project.error_msg}
+        return {"project_uuid": project.uuid, "manifest": project.project_config, "error_msg": project.error_msg}
 
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
@@ -145,7 +148,7 @@ class Project(Resource):
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
         shutil.rmtree(project_path)
-        return {"uuid": project_uuid}
+        return {"project_uuid": project_uuid}
 
 
 @api_v1.route("/projects/<string:project_uuid>/files")
@@ -161,14 +164,14 @@ class ProjectFiles(Resource):
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
         project = cli.Project.load_project(project_path)
-        return {"uuid": project.uuid, "files": project.project_config["files"]}
+        return {"project_uuid": project.uuid, "files": project.project_config["files"]}
 
     # add an uploaded file to the project
-    @api_v1.expect(parser)
+    @api_v1.expect(file_upload_parser)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def post(self, project_uuid):
-        args = parser.parse_args()
+        args = file_upload_parser.parse_args()
         log.info("POST to /projects/{}/files with args: {}".format(project_uuid, args))
 
         # try to load the project
@@ -189,3 +192,29 @@ class ProjectFiles(Resource):
         project.add_file(os.path.join(project_path, file.filename), args["file_type"])
 
         return {"project_uuid": project.uuid, "filename": file.filename, "error_msg": project.error_msg}
+
+    # remove an existing file from a project
+    @api_v1.expect(file_remove_parser)
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project or file not found")
+    def delete(self, project_uuid):
+        args = file_remove_parser.parse_args()
+        log.info("DELETE to /projects/{}/files with args: {}".format(project_uuid, args))
+
+        # try to load the project
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+        project = cli.Project.load_project(project_path)
+
+        # check if file exists
+        filename = args["filename"]
+        if not os.path.isfile(os.path.join(project_path, filename)):
+            log.error("File {} not found in project with UUID {}".format(filename, project.uuid))
+            return {"project_uuid": project.uuid, "error_msg": "File {} not found in project".format(filename)}, 404
+
+        # remove file from project manifest and delete it
+        project.remove_file(os.path.join(project_path, filename))
+        os.remove(os.path.join(project_path, filename))
+        return {"project_uuid": project.uuid, "removed_file": filename, "error_msg": project.error_msg}
