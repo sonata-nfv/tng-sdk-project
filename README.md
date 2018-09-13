@@ -91,11 +91,28 @@ TODO: How to run as Docker container
 $ tng-project -s    # starts the tool in service mode (running forever)
 ```
 
+Showing, adding, deleting projects:
 ```bash
 # terminal 2
-$ curl -X POST localhost:5098/api/v1/projects -d filename=new-project  # create a new project
+$ curl -X GET localhost:5098/api/v1/projects             # show all projects
+$ curl -X POST localhost:5098/api/v1/projects            # create a new project
+$ curl -X GET localhost:5098/api/v1/projects/{uuid}      # show details of the specified project
+$ curl -X DELETE localhost:5098/api/v1/projects/{uuid}   # delete the specified project
 ```
-TODO: what about application/json requests?
+
+Showing, adding, deleting project files:
+```bash
+# terminal 2
+$ curl -X GET localhost:5098/api/v1/projects/{uuid}/files   # show files of the specified project
+$ curl -X POST localhost:5098/api/v1/projects/{uuid}/files \
+    -H "Content-Type: multipart/form-data" \
+    -F file="@requirements.txt"                             # add new file to the project
+$ curl -X POST localhost:5098/api/v1/projects/{uuid}/files \
+    -H "Content-Type: multipart/form-data" \
+    -F file="@LICENSE" -F file_type="text/plain"            # add new file with specific MIME type
+```
+
+TODO: Link to Swagger spec
 
 ## Documentation
 
