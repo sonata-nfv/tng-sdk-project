@@ -117,6 +117,7 @@ filename_parser.add_argument("filename", location="form", required=True, help="F
 
 
 def dump_swagger():
+    """Dump Swagger specification in docs/rest_api.json"""
     # TODO replace this with the URL of a real tng-project service
     app.config.update(SERVER_NAME="tng-project.5gtango.eu")
     with app.app_context():
@@ -126,6 +127,7 @@ def dump_swagger():
 
 # start REST API server
 def serve_forever(args, debug=True):
+    """Start serving (forever) the REST API with flask"""
     # TODO replace this with WSGIServer for better performance
     log.info("Starting tng-project in service mode")
     app.cliargs = args
@@ -135,6 +137,7 @@ def serve_forever(args, debug=True):
 @api_v1.route("/pings")
 class Ping(Resource):
     def get(self):
+        """Health check: Respond with current uptime"""
         uptime = None
         try:
             uptime = str(subprocess.check_output("uptime")).strip()
@@ -147,11 +150,13 @@ class Ping(Resource):
 class Projects(Resource):
     @api_v1.response(200, 'OK')
     def get(self):
+        """Get list of projects"""
         log.info("GET to /projects. Loading available projects")
         project_dirs = [name for name in os.listdir('projects') if os.path.isdir(os.path.join('projects', name))]
         return {'projects': project_dirs}
     # TODO: check UUID in project manifest? should be consistent to project dir name anyways
 
+    @api_v1.expect(project_parser)
     @api_v1.response(200, 'OK')
     def post(self):
         """Create a new project and generate descriptors with the given args"""
@@ -192,6 +197,7 @@ class Project(Resource):
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def get(self, project_uuid):
+        """Get the UUID and manifest of the specified project"""
         log.info("GET to /projects/{}".format(project_uuid))
         project_path = os.path.join('projects', project_uuid)
         if not os.path.isdir(project_path):
@@ -204,6 +210,7 @@ class Project(Resource):
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def delete(self, project_uuid):
+        """Delete the specified project"""
         log.info("DELETE to /projects/{}".format(project_uuid))
         project_path = os.path.join('projects', project_uuid)
         if not os.path.isdir(project_path):
@@ -220,6 +227,7 @@ class ProjectFiles(Resource):
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def get(self, project_uuid):
+        """Get a list of files in the specified project"""
         log.info("GET to /projects/{}/files".format(project_uuid))
         project_path = os.path.join('projects', project_uuid)
         if not os.path.isdir(project_path):
@@ -229,11 +237,11 @@ class ProjectFiles(Resource):
         project = cli.Project.load_project(project_path)
         return {"project_uuid": project.uuid, "files": project.project_config["files"]}
 
-    # add an uploaded file to the project
     @api_v1.expect(file_upload_parser)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def post(self, project_uuid):
+        """Upload and add a file to the specified project"""
         args = file_upload_parser.parse_args()
         log.info("POST to /projects/{}/files with args: {}".format(project_uuid, args))
 
@@ -256,11 +264,11 @@ class ProjectFiles(Resource):
 
         return {"project_uuid": project.uuid, "filename": file.filename, "error_msg": project.error_msg}
 
-    # remove an existing file from a project
     @api_v1.expect(filename_parser)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project or file not found")
     def delete(self, project_uuid):
+        """Delete the specified project"""
         args = filename_parser.parse_args()
         log.info("DELETE to /projects/{}/files with args: {}".format(project_uuid, args))
 
@@ -284,9 +292,10 @@ class ProjectFiles(Resource):
 
 
 # TODO: do we even need this if we have the packager?
+@api_v1.deprecated
 @api_v1.route("/projects/<string:project_uuid>/download")
 class ProjectDownload(Resource):
-    # download the specified project as zip file
+    """Download the specified project as zip file. Not completely implemented. Use packager instead."""
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def get(self, project_uuid):
