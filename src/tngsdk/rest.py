@@ -57,6 +57,46 @@ api.add_namespace(api_v1)
 
 
 # parser arguments: for input parameters sent to the API
+project_parser = api_v1.parser()
+project_parser.add_argument("author",
+                            location="form",
+                            required=False,
+                            default='eu.tango',
+                            help="Service author")
+project_parser.add_argument("vendor",
+                            location="form",
+                            required=False,
+                            default='eu.tango',
+                            help="Service vendor")
+project_parser.add_argument("name",
+                            location="form",
+                            required=False,
+                            default='example-service',
+                            help="Service name")
+project_parser.add_argument("description",
+                            location="form",
+                            required=False,
+                            default='Example description',
+                            help="Service description")
+project_parser.add_argument("vnfs",
+                            location="form",
+                            type=int,
+                            required=False,
+                            default=1,
+                            help="Number of VNFs in the service")
+project_parser.add_argument("only_tango",
+                            location="form",
+                            type=bool,
+                            required=False,
+                            default=False,
+                            help="Generate only 5GTANGO descriptors")
+project_parser.add_argument("only_osm",
+                            location="form",
+                            type=bool,
+                            required=False,
+                            default=False,
+                            help="Generate only OSM descriptors")
+
 file_upload_parser = api_v1.parser()
 file_upload_parser.add_argument("file",
                                 location="files",
@@ -114,12 +154,34 @@ class Projects(Resource):
 
     @api_v1.response(200, 'OK')
     def post(self):
-        # args = parser.parse_args()
-        log.info("POST to /projects")
+        """Create a new project and generate descriptors with the given args"""
+        args = project_parser.parse_args()
+        log.info("POST to /projects with args: {}".format(args))
+
+        # transform args into array passed to the descriptorgen cli
+        # create a new UUID for each project (to avoid whitespaces)
         new_uuid = str(uuid.uuid4())
-        cli_args, extra_ars = cli.parse_args_project([
-            '-p', os.path.join('projects', new_uuid)
-        ])
+        dgn_args = ['-p', os.path.join('projects', new_uuid)]
+        # if
+
+        for k, v in args.items():
+            # only add --tango/--osm if value=True
+            if k == 'only_tango':
+                if v:
+                    dgn_args.append('--tango')
+            elif k == 'only_osm':
+                if v:
+                    dgn_args.append('--osm')
+            else:
+                # process non-string args (CLI only accepts string)
+                if k == 'vnfs':
+                    v = str(v)
+                # add '--' as prefix for each key to be consistent with CLI
+                dgn_args.append('--' + k)
+                dgn_args.append(v)
+        log.debug("CLI args: {}".format(dgn_args))
+
+        cli_args, extra_ars = cli.parse_args_project(dgn_args)
         project = cli.create_project(cli_args, extra_ars, fixed_uuid=new_uuid)
 
         return {'uuid': project.uuid, "error_msg": project.error_msg}
