@@ -1,0 +1,39 @@
+---
+# requires to start the service before (tng-project -s)
+test_name: Test /pings endpoint
+stages:
+  - name: Ping pong (for health checks)
+    request:
+      url: http://localhost:5098/api/v1/pings
+      method: GET
+    # expected response
+    response:
+      status_code: 200
+      body:
+        alive_since: !anything
+
+---
+test_name: Test /projects endpoint
+stages:
+  - name: Add new project with all defaults
+    request:
+      url: http://localhost:5098/api/v1/projects
+      method: POST
+    response:
+      uuid: !anything
+      # save the project UUID for later tests
+      save:
+        body:
+          uuid_project1: uuid
+
+# TODO
+#  - name: Add new project with specific descriptorgen args
+
+# FIXME: only check if uuids are in the list. not exact match
+#  - name: Get list of projects
+#    request:
+#      url: http://localhost:5098/api/v1/projects
+#      method: GET
+#      response:
+#        projects:
+#          - uuid_projects1
