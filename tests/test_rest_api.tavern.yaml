@@ -22,6 +22,7 @@ stages:
     response:
       body:
         uuid: !anything
+        error_msg: !anything
       # save the project UUID for later tests
       save:
         body:
@@ -40,15 +41,22 @@ stages:
     response:
       body:
         uuid: !anything
+        error_msg: !anything
       save:
         body:
           uuid_project2: uuid
 
-# FIXME: only check if uuids are in the list. not exact match
-#  - name: Check if new projects are included in list
-#    request:
-#      url: http://localhost:5098/api/v1/projects
-#      method: GET
-#      response:
-#        projects:
-#          - uuid_projects1
+  - name: Check if new projects are included in list
+    request:
+      url: http://localhost:5098/api/v1/projects
+      method: GET
+    response:
+      body:
+        # check if the previously created projects are in the returned list of all projects
+        $ext:
+          function: tests.helpers:check_elements_in_list
+          extra_kwargs:
+            elements:
+              - "{uuid_project1:s}"
+              - "{uuid_project2:s}"
+            list_key: projects
