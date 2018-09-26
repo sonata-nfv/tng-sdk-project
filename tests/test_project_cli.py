@@ -132,4 +132,4 @@ class TestProjectCLI:
         with open(project_yml_path) as open_file:
             project_yml = yaml.load(open_file)
             project_files = [f['path'] for f in project_yml['files']]
-            assert not 'sample.txt' in project_files
+            assert 'sample.txt' not in project_files
