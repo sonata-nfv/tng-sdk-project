@@ -38,7 +38,7 @@ import uuid
 import shutil
 import zipfile
 from flask import Flask, Blueprint, send_from_directory
-from flask_restplus import Resource, Api, Namespace
+from flask_restplus import Resource, Api, Namespace, fields
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.datastructures import FileStorage
 import tngsdk.project.project as cli
@@ -112,8 +112,17 @@ file_upload_parser.add_argument("file_type",
 filename_parser = api_v1.parser()
 filename_parser.add_argument("filename", location="form", required=True, help="Filename of the file to remove")
 
-# models for marshaling return values from the API
-# TODO: models (better to use marshmallow here?)
+# models for marshaling return values from the API (also used for generating Swagger spec)
+ping_get_model = api_v1.model("PingGet", {
+    "alive_since": fields.String(description="system uptime", required=True)
+})
+projects_get_model = api_v1.model("ProjectsGet", {
+    "projects": fields.List(fields.String, description="list of all project UUIDs", required=True)
+})
+projects_post_model = api_v1.model("ProjectsPost", {
+    "uuid": fields.String(description="project UUID", required=True),
+    "error_msg": fields.String(description="error message")
+})
 
 
 def dump_swagger():
@@ -136,6 +145,8 @@ def serve_forever(args, debug=True):
 
 @api_v1.route("/pings")
 class Ping(Resource):
+    @api_v1.response(200, "OK")
+    @api_v1.marshal_with(ping_get_model)
     def get(self):
         """Health check: Respond with current uptime"""
         uptime = None
@@ -149,6 +160,7 @@ class Ping(Resource):
 @api_v1.route("/projects")
 class Projects(Resource):
     @api_v1.response(200, 'OK')
+    @api_v1.marshal_with(projects_get_model)
     def get(self):
         """Get list of projects"""
         log.info("GET to /projects. Loading available projects")
@@ -158,6 +170,7 @@ class Projects(Resource):
 
     @api_v1.expect(project_parser)
     @api_v1.response(200, 'OK')
+    @api_v1.marshal_with(projects_post_model)
     def post(self):
         """Create a new project and generate descriptors with the given args"""
         args = project_parser.parse_args()
