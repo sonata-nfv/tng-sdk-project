@@ -5,6 +5,6 @@ oyaml
 coloredlogs
 tabulate
 requests
-flask
+Flask>=0.10.1
 werkzeug
 flask-restplus
