@@ -60,3 +60,66 @@ stages:
               - "{uuid_project1:s}"
               - "{uuid_project2:s}"
             list_key: projects
+
+  # /projects/{uuid} endpoint
+  - name: Access project
+    request:
+      url: "http://localhost:5098/api/v1/projects/{uuid_project1:s}"
+      method: GET
+    response:
+      body:
+        project_uuid: "{uuid_project1:s}"
+        manifest: !anything
+        error_msg: !anything
+
+  - name: Delete project
+    request:
+      url: "http://localhost:5098/api/v1/projects/{uuid_project1:s}"
+      method: DELETE
+    response:
+      status_code: 200
+      body:
+        project_uuid: "{uuid_project1:s}"
+
+  - name: Access deleted project (should fail)
+    request:
+      url: "http://localhost:5098/api/v1/projects/{uuid_project1:s}"
+      method: GET
+    response:
+      # project not found
+      status_code: 404
+
+  # /projects/{uuid}/files endpoint
+  - name: Access project files of other project
+    request:
+      url: "http://localhost:5098/api/v1/projects/{uuid_project2:s}/files"
+      method: GET
+    response:
+      body:
+        project_uuid: "{uuid_project2:s}"
+        files: !anything
+
+  # FIXME: doesn't recognize filename argument. wrong content type? works with curl urlencoding
+#  - name: Delete project file (project.yml)
+#    request:
+#      url: "http://localhost:5098/api/v1/projects/{uuid_project2:s}/files"
+#      method: DELETE
+#      json:
+#        filename: "project.yml"
+#      headers:
+#        content-type: application/json
+#    response:
+#      body:
+#        project_uuid: "{uuid_project2:s}"
+#        removed_file: project.yml
+#        error_msg: !anything
+
+  - name: Delete other project (cleanup)
+    request:
+      url: "http://localhost:5098/api/v1/projects/{uuid_project2:s}"
+      method: DELETE
+    response:
+      body:
+        project_uuid: "{uuid_project2:s}"
+
+# TODO: upload file (not sure how with tavern)
