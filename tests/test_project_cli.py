@@ -44,6 +44,10 @@ class TestProjectCLI:
     # create and return a temporary workspace 'test-ws'
     @pytest.fixture(scope='module')
     def workspace(self):
+        # start clean without workspace
+        if os.path.isdir('test-ws'):
+            shutil.rmtree('test-ws')
+
         args = workspace.parse_args_workspace([
             '-w', 'test-ws',
             '--debug'
@@ -56,19 +60,43 @@ class TestProjectCLI:
     # create and return a new temporary project 'test-project'
     @pytest.fixture(scope='module')
     def project(self, workspace):
-        args = cli.parse_args_project([
+        args, extra_ars = cli.parse_args_project([
             '-p', 'test-project',
             '-w', workspace,
-            '--debug'
+            '--debug',
+            '--author', 'test.author',
+            '--vendor', 'test.vendor',
+            '--vnfs', '2'
         ])
-        project = cli.create_project(args)
+        project = cli.create_project(args, extra_ars)
         assert os.path.isdir('test-project')
         assert os.path.isfile(os.path.join('test-project', 'project.yml'))
         yield project
         shutil.rmtree('test-project')
 
+    # check generated descriptors (integration with descriptorgen)
+    def test_generated_descriptors(self, project):
+        # test if all descriptors exist
+        assert os.path.isfile(os.path.join(project.project_root, 'tango_nsd.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'tango_vnfd0.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'tango_vnfd1.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'osm_nsd.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'osm_vnfd0.yml'))
+        assert os.path.isfile(os.path.join(project.project_root, 'osm_vnfd1.yml'))
+
+        # test if fields are set correctly
+        with open(os.path.join(project.project_root, 'tango_nsd.yml'), 'r') as f:
+            tango_nsd = yaml.load(f)
+            assert tango_nsd['author'] == 'test.author'
+            assert tango_nsd['vendor'] == 'test.vendor'
+            assert len(tango_nsd['network_functions']) == 2
+        with open(os.path.join(project.project_root, 'osm_nsd.yml'), 'r') as f:
+            osm_nsd = yaml.load(f)
+            assert osm_nsd['vendor'] == 'test.vendor'
+            assert len(osm_nsd['constituent-vnfd']) == 2
+
     # add a file to the test project
-    def test_add_file(self, workspace, project):
+    def test_add_remove_file(self, workspace, project):
         project_path = project.project_root
 
         # create new text file inside the project
@@ -78,34 +106,30 @@ class TestProjectCLI:
         assert os.path.isfile(file_path)
 
         # add to project.yml
-        args = cli.parse_args_project([
+        args, extra_args = cli.parse_args_project([
             '-w', workspace,
             '-p', str(project_path),
             '--add', str(file_path),
             '--debug'
         ])
-        cli.create_project(args)
+        cli.create_project(args, extra_args)
         project_yml_path = os.path.join(project_path, 'project.yml')
         with open(project_yml_path) as open_file:
             project_yml = yaml.load(open_file)
             project_files = [f['path'] for f in project_yml['files']]
             assert 'sample.txt' in project_files
 
-    # remove a file from the test project
-    def test_remove_file(self, workspace, project):
-        # check if sample NSD exists
-        project_files = [f['path'] for f in project.project_config['files']]
-        assert any('nsd-sample.yml' in path for path in project_files)
-
-        # remove sample NSD
-        args = cli.parse_args_project([
+        # remove sample.txt
+        args, extra_args = cli.parse_args_project([
             '-w', workspace,
             '-p', str(project.project_root),
-            '--remove', os.path.join(project.project_root, 'sources', 'nsd', 'nsd-sample.yml'),
+            '--remove', os.path.join(project.project_root, 'sample.txt'),
             '--debug'
         ])
-        project = cli.create_project(args)
+        project = cli.create_project(args, extra_args)
 
         # check if NSD was removed
-        project_files = [f['path'] for f in project.project_config['files']]
-        assert not any('nsd-sample.yml' in path for path in project_files)
+        with open(project_yml_path) as open_file:
+            project_yml = yaml.load(open_file)
+            project_files = [f['path'] for f in project_yml['files']]
+            assert 'sample.txt' not in project_files

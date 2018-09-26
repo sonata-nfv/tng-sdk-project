@@ -45,6 +45,7 @@ import coloredlogs
 from collections import defaultdict
 from tabulate import tabulate
 from tngsdk.project.workspace import Workspace
+from tngsdk.descriptorgen import descriptorgen
 
 
 log = logging.getLogger(__name__)
@@ -104,7 +105,8 @@ class Project:
             'files': []
         }
 
-    def create_prj(self, empty=False):
+    # create new project (empty or with descriptors by descriptorgen)
+    def create_prj(self, empty=False, dgn_args=None):
         # create project root directory (if it doesn't exist)
         log.info('Creating project at {}'.format(self._prj_root))
         if os.path.isdir(self._prj_root):
@@ -117,47 +119,19 @@ class Project:
         if empty:
             log.debug('Creating empty project (no folders or sample files)')
         else:
-            self._create_dirs()
+            self._gen_descriptors(dgn_args)
         self._write_prj_yml()
 
-    # creates directory tree of the project and sample descriptors
-    def _create_dirs(self):
-        directories = {'sources', 'dependencies', 'deployment'}
-        for d in directories:
-            path = os.path.join(self._prj_root, d)
-            os.makedirs(path, exist_ok=True)
+    # generate descriptors using the descriptorgen module and specified args
+    def _gen_descriptors(self, dgn_args):
+        dgn_args.out_path = self._prj_root
+        log.info("Generating descriptors")
+        log.debug("Descriptor generation args: {}".format(dgn_args))
+        descriptorgen.generate(dgn_args)
 
-        src_path = os.path.join(self._prj_root, 'sources')
-        vnfd_path = os.path.join(src_path, 'vnfd')
-        nsd_path = os.path.join(src_path, 'nsd')
-        os.makedirs(vnfd_path, exist_ok=True)
-        os.makedirs(nsd_path, exist_ok=True)
-        self._create_vnfd(vnfd_path)
-        self._create_nsd(nsd_path)
-
-    # create directory and sample VNFD
-    def _create_vnfd(self, path):
-        sample_vnfd = 'vnfd-sample.yml'
-        vnfd_path = os.path.join(path, sample_vnfd)
-        rp = __name__
-
-        # Copy sample VNF descriptor
-        src_path = os.path.join('samples', sample_vnfd)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, vnfd_path)
-        self.add_file(vnfd_path)
-
-    # create NSD
-    def _create_nsd(self, path):
-        sample_nsd = 'nsd-sample.yml'
-        nsd_path = os.path.join(path, sample_nsd)
-        rp = __name__
-
-        # Copy sample NS descriptor
-        src_path = os.path.join('samples', sample_nsd)
-        srcfile = pkg_resources.resource_filename(rp, src_path)
-        shutil.copyfile(srcfile, nsd_path)
-        self.add_file(nsd_path)
+        # add generated files to project manifest
+        log.debug("Adding generated descriptors to project manifest")
+        self.add_file(os.path.join(self._prj_root, "*"))
 
     # writes project descriptor to file (project.yml)
     def _write_prj_yml(self):
@@ -184,6 +158,11 @@ class Project:
                 yml_file = yaml.load(yml_file)
                 if 'descriptor_schema' in yml_file:
                     type = self.type_mapping[yml_file['descriptor_schema']]
+                # try to detect OSM descriptors based on field names
+                elif 'constituent-vnfd' in yml_file and 'vld' in yml_file:
+                    type = 'application/vnd.etsi.osm.nsd'
+                elif 'vnfd-catalog' in yml_file:
+                    type = 'application/vnd.etsi.osm.vnfd'
                 else:
                     log.warning('Could not detect MIME type of {}. '
                                 'Using text/yaml'.format(file))
@@ -213,6 +192,13 @@ class Project:
                       'the -t argument.'.format(file_path))
             return
 
+        # set tags accordingly
+        tags = []
+        if '5gtango' in type:
+            tags = ['eu.5gtango']
+        elif 'osm' in type:
+            tags = ['etsi.osm']
+
         # calculate relative file path to project root
         abs_file_path = os.path.abspath(file_path)
         abs_prj_root = os.path.abspath(self._prj_root)
@@ -223,7 +209,7 @@ class Project:
             log.debug('Adjusted Windows path in project.yml: {}'.format(rel_file_path))
 
         # add to project.yml
-        file = {'path': rel_file_path, 'type': type, 'tags': ['eu.5gtango']}
+        file = {'path': rel_file_path, 'type': type, 'tags': tags}
         if file in self._prj_config['files']:
             log.warning('{} is already in project.yml.'.format(file_path))
         else:
@@ -457,18 +443,24 @@ def parse_args_project(input_args=None):
 
     if input_args is None:
         input_args = sys.argv[1:]
-    return parser.parse_args(input_args)
+    return parser.parse_known_args(input_args)
 
 
 # create and return project
-def create_project(args=None):
+def create_project(args=None, extra_args=None):
     if args is None:
-        args = parse_args_project()
+        args, extra_args = parse_args_project()
 
     if args.debug:
         coloredlogs.install(level='DEBUG')
     else:
         coloredlogs.install(level='INFO')
+
+    # pass extra_args arguments to descriptorgen (to check if descriptorgen knows them)
+    dgn_args = None
+    if extra_args is not None:
+        log.debug("Passing these parameters to descriptorgen: {}".format(extra_args))
+        dgn_args = descriptorgen.parse_args(extra_args)
 
     # use specified workspace or default
     if args.workspace:
@@ -510,7 +502,7 @@ def create_project(args=None):
         # create project
         log.debug("Attempting to create a new project")
         proj = Project(ws, prj_root)
-        proj.create_prj(args.empty)
+        proj.create_prj(args.empty, dgn_args)
         log.debug("Project created.")
 
     return proj

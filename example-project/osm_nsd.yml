@@ -1,0 +1,16 @@
+id: tango-nsd
+name: tango-nsd
+description: Default description
+vendor: eu.5gtango
+version: 1.0
+constituent-vnfd:
+- member-vnf-index: 0
+  vnfd-id-ref: default-vnf0
+vld:
+- id: mgmt
+  name: mgmt
+  mgmt-network: true
+  vnfd-connection-point-ref:
+  - member-vnf-index-ref: 0
+    vnfd-connection-point-ref: mgmt
+    vnfd-id-ref: default-vnf0

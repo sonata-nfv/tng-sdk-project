@@ -35,7 +35,7 @@ from setuptools import setup, find_packages
 
 setup(name='tngsdk.project',
       license='Apache License, Version 2.0',
-      version='0.9',
+      version='4.1',
       url='https://github.com/sonata-nfv/tng-sdk-project',
       author='Manuel Peuster',
       author_email='manuel.peuster@uni-paderborn.de',
