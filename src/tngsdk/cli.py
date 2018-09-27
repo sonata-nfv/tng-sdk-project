@@ -45,6 +45,12 @@ log = logging.getLogger(__name__)
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description="5GTANGO SDK project")
+
+    parser.add_argument("-v", "--debug",
+                        help="increases logging level to debug",
+                        required=False,
+                        action="store_true")
+
     # project CLI
     parser.add_argument("-p", "--project",
                         help="create a new project at the specified location",
@@ -59,11 +65,6 @@ def parse_args(input_args=None):
 
     parser.add_argument("--empty",
                         help="create an empty project (without sample files)",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("-v", "--debug",
-                        help="increases logging level to debug",
                         required=False,
                         action="store_true")
 
@@ -93,10 +94,8 @@ def parse_args(input_args=None):
                         action="store_true")
 
     # descriptorgen CLI
-    # parser.add_argument('-o', help='set relative output path',
-    #                     required=False, default='.', dest='out_path')
-    # parser.add_argument('--debug', help='increases logging level to debug',
-    #                     required=False, action='store_true')
+    parser.add_argument('-o', help='set relative output path',
+                        required=False, default='.', dest='out_path')
     parser.add_argument('--tango', help='only generate 5GTANGO descriptors',
                         required=False, action='store_true')
     parser.add_argument('--osm', help='only generate OSM descriptors',
