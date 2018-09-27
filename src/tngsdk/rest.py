@@ -41,7 +41,8 @@ from flask import Flask, Blueprint, send_from_directory
 from flask_restplus import Resource, Api, Namespace, fields
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.datastructures import FileStorage
-import tngsdk.project.project as cli
+import tngsdk.cli as cli
+from tngsdk.project.project import Project as cli_project   # important: else would collide with Project class here
 
 
 log = logging.getLogger(__name__)
@@ -180,7 +181,6 @@ class Projects(Resource):
         # create a new UUID for each project (to avoid whitespaces)
         new_uuid = str(uuid.uuid4())
         dgn_args = ['-p', os.path.join('projects', new_uuid)]
-        # if
 
         for k, v in args.items():
             # only add --tango/--osm if value=True
@@ -199,8 +199,8 @@ class Projects(Resource):
                 dgn_args.append(v)
         log.debug("CLI args: {}".format(dgn_args))
 
-        cli_args, extra_ars = cli.parse_args_project(dgn_args)
-        project = cli.dispatch(cli_args, extra_ars, fixed_uuid=new_uuid)
+        cli_args = cli.parse_args(dgn_args)
+        project = cli.dispatch(cli_args, fixed_uuid=new_uuid)
 
         return {'uuid': project.uuid, "error_msg": project.error_msg}
 
@@ -217,7 +217,7 @@ class Project(Resource):
             log.error("No project found with name/UUID {}".format(project_uuid))
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
-        project = cli.Project.load_project(project_path)
+        project = cli_project.load_project(project_path)
         return {"project_uuid": project.uuid, "manifest": project.project_config, "error_msg": project.error_msg}
 
     @api_v1.response(200, 'OK')
@@ -247,7 +247,7 @@ class ProjectFiles(Resource):
             log.error("No project found with name/UUID {}".format(project_uuid))
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
-        project = cli.Project.load_project(project_path)
+        project = cli_project.load_project(project_path)
         return {"project_uuid": project.uuid, "files": project.project_config["files"]}
 
     @api_v1.expect(file_upload_parser)
@@ -263,7 +263,7 @@ class ProjectFiles(Resource):
         if not os.path.isdir(project_path):
             log.error("No project found with name/UUID {}".format(project_uuid))
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
-        project = cli.Project.load_project(project_path)
+        project = cli_project.load_project(project_path)
 
         # check if file already exists
         file = args["file"]
@@ -290,7 +290,7 @@ class ProjectFiles(Resource):
         if not os.path.isdir(project_path):
             log.error("No project found with name/UUID {}".format(project_uuid))
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
-        project = cli.Project.load_project(project_path)
+        project = cli_project.load_project(project_path)
 
         # check if file exists
         filename = args["filename"]
@@ -319,7 +319,7 @@ class ProjectDownload(Resource):
         if not os.path.isdir(project_path):
             log.error("No project found with name/UUID {}".format(project_uuid))
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
-        project = cli.Project.load_project(project_path)
+        project = cli_project.load_project(project_path)
 
         # zip the project
         zip_path = os.path.join('projects', project.uuid + '.zip')
