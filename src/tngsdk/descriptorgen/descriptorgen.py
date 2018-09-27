@@ -33,44 +33,14 @@
 # partner consortium (www.5gtango.eu).
 
 
-import argparse
 import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
 import os
 import logging
 import coloredlogs
-import sys
+import tngsdk.cli as cli
 from tngsdk.descriptorgen.plugins import tango, osm
 
-
 log = logging.getLogger(__name__)
-
-
-def parse_args(input_args=None):
-    parser = argparse.ArgumentParser(description='Generate NSD and VNFDs',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-o', help='set relative output path',
-                        required=False, default='.', dest='out_path')
-    parser.add_argument('--debug', help='increases logging level to debug',
-                        required=False, action='store_true')
-    parser.add_argument('--tango', help='only generate 5GTANGO descriptors',
-                        required=False, action='store_true')
-    parser.add_argument('--osm', help='only generate OSM descriptors',
-                        required=False, action='store_true')
-    parser.add_argument('--author', help='set a specific NSD and VNFD author',
-                        required=False, default='5GTANGO Developer', dest='author')
-    parser.add_argument('--vendor', help='set a specific NSD and VNFD vendor',
-                        required=False, default='eu.5gtango', dest='vendor')
-    parser.add_argument('--name', help='set a specific NSD name',
-                        required=False, default='tango-nsd', dest='name')
-    parser.add_argument('--description', help='set a specific NSD description',
-                        required=False, default='Default description',
-                        dest='description')
-    parser.add_argument('--vnfs', help='set a specific number of VNFs',
-                        required=False, default=1, dest='vnfs')
-
-    if input_args is None:
-        input_args = sys.argv[1:]
-    return parser.parse_args(input_args)
 
 
 # save the generated descriptors in the specified folder; add a prefix for each flavor
@@ -91,7 +61,7 @@ def save_descriptors(nsd, vnfds, flavor, folder='.'):
 
 def generate(args=None):
     if args is None:
-        args = parse_args()
+        args = cli.parse_args()
 
     if args.debug:
         coloredlogs.install(level='DEBUG')

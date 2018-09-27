@@ -36,7 +36,8 @@ import pytest
 import os
 import shutil
 import yaml
-import tngsdk.descriptorgen.descriptorgen as cli
+import tngsdk.cli as cli
+import tngsdk.descriptorgen.descriptorgen as dgn
 
 
 class TestDescriptorgenCLI:
@@ -49,7 +50,7 @@ class TestDescriptorgenCLI:
             '--description', 'test.description',
             '-o', 'test-descriptorgen'
         ])
-        cli.generate(args)
+        dgn.generate(args)
 
         # check tango nsd and vnfd
         with open(os.path.join('test-descriptorgen', 'tango_nsd.yml'), 'r') as f:
@@ -88,7 +89,7 @@ class TestDescriptorgenCLI:
             '--vnfs', str(num_vnfs),
             '-o', 'test-descriptorgen'
         ])
-        cli.generate(args)
+        dgn.generate(args)
 
         # check the NSDs
         with open(os.path.join('test-descriptorgen', 'tango_nsd.yml'), 'r') as f:
@@ -112,7 +113,7 @@ class TestDescriptorgenCLI:
             '--tango',
             '-o', 'test-descriptorgen'
         ])
-        cli.generate(args)
+        dgn.generate(args)
 
         assert os.path.isfile(os.path.join('test-descriptorgen', 'tango_nsd.yml'))
         assert os.path.isfile(os.path.join('test-descriptorgen', 'tango_vnfd0.yml'))
@@ -127,7 +128,7 @@ class TestDescriptorgenCLI:
             '--osm',
             '-o', 'test-descriptorgen'
         ])
-        cli.generate(args)
+        dgn.generate(args)
 
         assert os.path.isfile(os.path.join('test-descriptorgen', 'osm_nsd.yml'))
         assert os.path.isfile(os.path.join('test-descriptorgen', 'osm_vnfd0.yml'))
