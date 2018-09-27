@@ -42,8 +42,8 @@ setup(name='tngsdk.project',
       license='Apache License, Version 2.0',
       version='4.1',
       url='https://github.com/sonata-nfv/tng-sdk-project',
-      author='Manuel Peuster',
-      author_email='manuel.peuster@uni-paderborn.de',
+      author='Manuel Peuster, Stefan Schneider',
+      author_email='manuel.peuster@upb.de, stefan.schneider@upb.de',
       package_dir={'': 'src'},
       packages=find_packages('src'),   # dependency resolution
       include_package_data=True,       # package data specified in MANIFEST.in
@@ -64,4 +64,4 @@ setup(name='tngsdk.project',
           ],
       },
       test_suite='tngsdk',
-      tests_require=['pytest'])
+      tests_require=['pytest', 'tavern', 'pycodestyle'])
