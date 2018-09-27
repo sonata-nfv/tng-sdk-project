@@ -26,6 +26,19 @@ $ cd tng-sdk-project
 $ python setup.py install
 ```
 
+It is a good practice to first create an new virtual environment in which all 5GTANGO SDK tools can be installed. You can do this as follows:
+
+```sh
+# get the path to your Python3 installation
+which python3
+
+# create a new virtualenv
+virtualenv -p <path/to/python3> venv
+
+# activate the virtualenv
+source venv/bin/activate
+```
+
 ## Usage
 
 ### Workspace
