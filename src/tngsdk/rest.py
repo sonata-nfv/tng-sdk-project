@@ -41,7 +41,7 @@ from flask import Flask, Blueprint, send_from_directory
 from flask_restplus import Resource, Api, Namespace, fields
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.datastructures import FileStorage
-import tngsdk.cli as cli
+from tngsdk import cli
 from tngsdk.project.project import Project as cli_project   # important: else would collide with Project class here
 
 

@@ -37,7 +37,7 @@ import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
 import os
 import logging
 import coloredlogs
-import tngsdk.cli as cli
+from tngsdk import cli
 from tngsdk.descriptorgen.plugins import tango, osm
 
 log = logging.getLogger(__name__)
