@@ -46,7 +46,8 @@ log = logging.getLogger(__name__)
 
 
 def parse_args(input_args=None):
-    parser = argparse.ArgumentParser(description='Generate NSD and VNFDs')
+    parser = argparse.ArgumentParser(description='Generate NSD and VNFDs',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-o', help='set relative output path',
                         required=False, default='.', dest='out_path')
     parser.add_argument('--debug', help='increases logging level to debug',

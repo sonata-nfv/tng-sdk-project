@@ -1,0 +1,10 @@
+pytest
+tavern
+pyaml
+oyaml
+coloredlogs
+tabulate
+requests
+Flask>=0.10.1
+werkzeug
+flask-restplus

@@ -225,7 +225,7 @@ class Workspace:
         return os.path.exists(ws_file) or os.path.exists(self.workspace_root)
 
     @staticmethod
-    def __create_from_descriptor__(ws_root):
+    def load_workspace(ws_root):
         """
         Creates a Workspace object based on a configuration descriptor
         :param ws_root: base path of the workspace

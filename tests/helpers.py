@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #  Copyright (c) 2015 SONATA-NFV, 5GTANGO, UBIWHERE, Paderborn University
 # ALL RIGHTS RESERVED.
 #
@@ -30,38 +32,23 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 
-import os
-from setuptools import setup, find_packages
+"""Module with helper functions for testing. Eg, used in tavern."""
+
+import logging
 
 
-cwd = os.path.dirname(__file__)
-with open(os.path.join(cwd, 'requirements.txt')) as f:
-    requirements = f.read().splitlines()
+log = logging.getLogger(__name__)
 
-setup(name='tngsdk.project',
-      license='Apache License, Version 2.0',
-      version='4.1',
-      url='https://github.com/sonata-nfv/tng-sdk-project',
-      author='Manuel Peuster, Stefan Schneider',
-      author_email='manuel.peuster@upb.de, stefan.schneider@upb.de',
-      package_dir={'': 'src'},
-      packages=find_packages('src'),   # dependency resolution
-      include_package_data=True,       # package data specified in MANIFEST.in
-      install_requires=requirements,
-      zip_safe=False,
-      entry_points={
-          'console_scripts': [
-              'tng-sdk-workspace=tngsdk.project.workspace:init_workspace',
-              'tng-workspace=tngsdk.project.workspace:init_workspace',
-              'tng-wks=tngsdk.project.workspace:init_workspace',
-              'tng-sdk-project=tngsdk.project.project:create_project',
-              'tng-project=tngsdk.project.project:create_project',
-              'tng-prj=tngsdk.project.project:create_project',
-              'tng-sdk-descriptorgen=tngsdk.descriptorgen.descriptorgen:'
-              'generate',
-              'tng-descriptorgen=tngsdk.descriptorgen.descriptorgen:generate',
-              'tng-dgn=tngsdk.descriptorgen.descriptorgen:generate'
-          ],
-      },
-      test_suite='tngsdk',
-      tests_require=['pytest', 'tavern', 'pycodestyle'])
+
+def check_elements_in_list(response, elements, list_key):
+    """Check if the defined list of elements is in the list (with the specified key inside the response)"""
+    content = response.json()
+    log.debug("Response content (json): {}".format(content))
+    log.debug("Elements to check: {}".format(elements))
+    log.debug("List key in response: {}".format(list_key))
+
+    # check that the key is in the response content
+    assert list_key in content
+    # check that the elements are in the list
+    for el in elements:
+        assert el in content[list_key]
