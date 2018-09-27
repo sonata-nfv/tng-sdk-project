@@ -39,14 +39,10 @@ import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
 import uuid
 import glob
 import mimetypes
-import argparse
-import coloredlogs
 from collections import defaultdict
 from tabulate import tabulate
 from tngsdk.project.workspace import Workspace
 from tngsdk.descriptorgen import descriptorgen
-from tngsdk import rest
-
 
 log = logging.getLogger(__name__)
 
@@ -114,7 +110,7 @@ class Project:
         }
 
     # create new project (empty or with descriptors by descriptorgen)
-    def create_prj(self, empty=False, dgn_args=None):
+    def create_prj(self, args):
         # create project root directory (if it doesn't exist)
         log.info('Creating project at {}'.format(self._prj_root))
         if os.path.isdir(self._prj_root):
@@ -124,18 +120,18 @@ class Project:
         os.makedirs(self._prj_root, exist_ok=False)
 
         # create subdirs, sample descriptors, and project.yml
-        if empty:
+        if args.empty:
             log.debug('Creating empty project (no folders or sample files)')
         else:
-            self._gen_descriptors(dgn_args)
+            self._gen_descriptors(args)
         self._write_prj_yml()
 
     # generate descriptors using the descriptorgen module and specified args
-    def _gen_descriptors(self, dgn_args):
-        dgn_args.out_path = self._prj_root
+    def _gen_descriptors(self, args):
+        args.out_path = self._prj_root
         log.info("Generating descriptors")
-        log.debug("Descriptor generation args: {}".format(dgn_args))
-        descriptorgen.generate(dgn_args)
+        log.debug("Descriptor generation args: {}".format(args))
+        descriptorgen.generate(args)
 
         # add generated files to project manifest
         log.debug("Adding generated descriptors to project manifest")
@@ -382,162 +378,3 @@ class Project:
                       .format(prj_config['version'], Project.CONFIG_VERSION))
 
         return Project(workspace, prj_root, config=prj_config)
-
-
-def parse_args_project(input_args=None):
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description="5GTANGO SDK project")
-    # project CLI
-    parser.add_argument("-p", "--project",
-                        help="create a new project at the specified location",
-                        required=False,
-                        default='new-project')
-
-    parser.add_argument("-w", "--workspace",
-                        help="location of existing (or new) workspace. "
-                        "If not specified will assume '{}'"
-                        .format(Workspace.DEFAULT_WORKSPACE_DIR),
-                        required=False)
-
-    parser.add_argument("--empty",
-                        help="create an empty project (without sample files)",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("-v", "--debug",
-                        help="increases logging level to debug",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("--add",
-                        help="Add file to project",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("-t", "--type",
-                        help="MIME type of added file (only with --add)",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("--remove",
-                        help="Remove file from project",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("--status",
-                        help="Show project file paths",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("--translate",
-                        help="Translate old SONATA project to new 5GTANGO project",
-                        required=False,
-                        action="store_true")
-
-    # service management
-    parser.add_argument("-s", "--service",
-                        help="Run tng-project in service mode with REST API.",
-                        required=False,
-                        default=False,
-                        dest="service",
-                        action="store_true")
-
-    parser.add_argument("--dump-swagger",
-                        help="Dump Swagger JSON of REST API and exit",
-                        required=False,
-                        default=False,
-                        dest="dump_swagger",
-                        action="store_true")
-
-    parser.add_argument("--address",
-                        help="Listen address of REST API when in service mode.",
-                        required=False,
-                        default="localhost",
-                        dest="service_address")
-
-    parser.add_argument("--port",
-                        help="TCP port of REST API when in service mode.",
-                        required=False,
-                        default=5098,
-                        dest="service_port")
-
-    if input_args is None:
-        input_args = sys.argv[1:]
-    return parser.parse_known_args(input_args)
-
-
-# create and return project
-def create_project(args=None, extra_args=None, fixed_uuid=None):
-    if args is None:
-        args, extra_args = parse_args_project()
-
-    if args.debug:
-        coloredlogs.install(level='DEBUG')
-    else:
-        coloredlogs.install(level='INFO')
-
-    # pass extra_args arguments to descriptorgen (to check if descriptorgen knows them)
-    dgn_args = None
-    if extra_args is not None:
-        log.debug("Passing these parameters to descriptorgen: {}".format(extra_args))
-        dgn_args = descriptorgen.parse_args(extra_args)
-
-    # dump Swagger REST API specification
-    if args.dump_swagger:
-        rest.dump_swagger()
-        log.info("Dumped Swagger API spec to docs/rest_api.json")
-        exit(0)
-
-    # start service with REST API (instead of using CLI)
-    if args.service:
-        rest.serve_forever(args)
-        exit(0)
-
-    # use specified workspace or default
-    if args.workspace:
-        ws_root = os.path.expanduser(args.workspace)
-    else:
-        ws_root = Workspace.DEFAULT_WORKSPACE_DIR
-
-    ws = Workspace.load_workspace(ws_root)
-    if not ws:
-        print("Could not find a 5GTANGO workspace at the specified location",
-              file=sys.stderr)
-        exit(1)
-
-    prj_root = os.path.expanduser(args.project)
-
-    if args.add:
-        # load project and add file to project.yml
-        log.debug("Attempting to add file {}".format(args.add))
-        proj = Project.load_project(prj_root, ws)
-        proj.add_file(args.add, type=args.type)
-
-    elif args.remove:
-        # load project and remove file from project.yml
-        log.debug("Attempting to remove file {}".format(args.remove))
-        proj = Project.load_project(prj_root, ws)
-        proj.remove_file(args.remove)
-
-    elif args.status:
-        # load project and show status
-        log.debug("Attempting to show project status")
-        proj = Project.load_project(prj_root, ws)
-        proj.status()
-
-    elif args.translate:
-        proj = Project.load_project(prj_root, ws, translate=True)
-        proj.translate()
-
-    else:
-        # create project
-        log.debug("Attempting to create a new project")
-        proj = Project(ws, prj_root, fixed_uuid=fixed_uuid)
-        proj.create_prj(args.empty, dgn_args)
-        log.debug("Project created.")
-
-    return proj
-
-
-if __name__ == '__main__':
-    project = create_project()

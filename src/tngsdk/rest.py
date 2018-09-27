@@ -200,7 +200,7 @@ class Projects(Resource):
         log.debug("CLI args: {}".format(dgn_args))
 
         cli_args, extra_ars = cli.parse_args_project(dgn_args)
-        project = cli.create_project(cli_args, extra_ars, fixed_uuid=new_uuid)
+        project = cli.dispatch(cli_args, extra_ars, fixed_uuid=new_uuid)
 
         return {'uuid': project.uuid, "error_msg": project.error_msg}
 

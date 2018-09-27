@@ -69,7 +69,7 @@ class TestProjectCLI:
             '--vendor', 'test.vendor',
             '--vnfs', '2'
         ])
-        project = cli.create_project(args, extra_ars)
+        project = cli.dispatch(args, extra_ars)
         assert os.path.isdir('test-project')
         assert os.path.isfile(os.path.join('test-project', 'project.yml'))
         yield project
@@ -123,7 +123,7 @@ class TestProjectCLI:
             '--add', str(file_path),
             '--debug'
         ])
-        cli.create_project(args, extra_args)
+        cli.dispatch(args, extra_args)
         project_yml_path = os.path.join(project_path, 'project.yml')
         with open(project_yml_path) as open_file:
             project_yml = yaml.load(open_file)
@@ -137,7 +137,7 @@ class TestProjectCLI:
             '--remove', os.path.join(project.project_root, 'sample.txt'),
             '--debug'
         ])
-        project = cli.create_project(args, extra_args)
+        project = cli.dispatch(args, extra_args)
 
         # check if NSD was removed
         with open(project_yml_path) as open_file:
