@@ -372,9 +372,9 @@ class Project:
         # deal with different versions
         if prj_config['version'] < Project.CONFIG_VERSION and not translate:
             log.warning("Project version {} is outdated. To translate to new 5GTANGO project version use --translate"
-                      .format(prj_config['version']))
+                        .format(prj_config['version']))
         if prj_config['version'] > Project.CONFIG_VERSION:
             log.warning("Project version {} is ahead of the current version {}."
-                      .format(prj_config['version'], Project.CONFIG_VERSION))
+                        .format(prj_config['version'], Project.CONFIG_VERSION))
 
         return Project(workspace, prj_root, config=prj_config)

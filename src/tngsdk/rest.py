@@ -37,12 +37,13 @@ import os
 import uuid
 import shutil
 import zipfile
-from flask import Flask, Blueprint, send_from_directory
+from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace, fields
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.datastructures import FileStorage
 from tngsdk import cli
-from tngsdk.project.project import Project as cli_project   # important: else would collide with Project class here
+# important: import as cli_project; else would collide with Project class here
+from tngsdk.project.project import Project as cli_project
 
 
 log = logging.getLogger(__name__)
