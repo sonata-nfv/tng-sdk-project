@@ -22,7 +22,7 @@ stages:
     response:
       body:
         uuid: !anything
-        error_msg: !anything
+        error_msg: null
       # save the project UUID for later tests
       save:
         body:
@@ -41,7 +41,7 @@ stages:
     response:
       body:
         uuid: !anything
-        error_msg: !anything
+        error_msg: null
       save:
         body:
           uuid_project2: uuid
@@ -70,7 +70,7 @@ stages:
       body:
         project_uuid: "{uuid_project1:s}"
         manifest: !anything
-        error_msg: !anything
+        error_msg: null
 
   - name: Delete project
     request:
@@ -112,7 +112,7 @@ stages:
 #      body:
 #        project_uuid: "{uuid_project2:s}"
 #        removed_file: project.yml
-#        error_msg: !anything
+#        error_msg: null
 
   - name: Delete other project (cleanup)
     request:
