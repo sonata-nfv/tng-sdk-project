@@ -37,6 +37,7 @@ import os
 import shutil
 import yaml
 import tngsdk.project.workspace as workspace
+from tngsdk.project.workspace import Workspace
 import tngsdk.cli as cli
 from tngsdk.project.project import Project
 
@@ -76,8 +77,9 @@ class TestProjectCLI:
         shutil.rmtree('test-project')
 
     # load example-project: ensure loading works and example is up-to-date
-    def test_load_example_project(self, capsys):
-        project = Project.load_project('example-project')
+    def test_load_example_project(self, capsys, workspace):
+        ws = Workspace.load_workspace(workspace)
+        project = Project.load_project('example-project', workspace=ws)
         project.status()
 
         # assert that the status is printed correctly
