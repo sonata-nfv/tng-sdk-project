@@ -33,15 +33,14 @@
 FROM python:3.6-slim
 MAINTAINER 5GTANGO
 
+# install
 RUN pip install pycodestyle
-
 ADD . /tng-sdk-project
-
 WORKDIR /tng-sdk-project
 RUN python setup.py install
 
-#CMD [ "/bin/bash" ]
 
+# run
 EXPOSE 5098
 CMD ["tng-project", "-s"]
 

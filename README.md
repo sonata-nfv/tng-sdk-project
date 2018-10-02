@@ -84,11 +84,23 @@ For more information, use `tng-descriptorgen -h`.
 
 ### Service mode with REST API
 
-TODO: How to run as Docker container
+**Run on bare metal:**
 
 ```bash
 # terminal 1
 $ tng-project -s    # starts the tool in service mode (running forever)
+```
+
+**Run in Docker container:**
+
+```bash
+pipeline/build/build.sh
+docker run --rm -d -p 5098:5098 --name tng-sdk-project registry.sonata-nfv.eu:5000/tng-sdk-project
+```
+
+**Connect to detached container (e.g., for debugging):**
+```bash
+
 ```
 
 Showing, adding, deleting projects:
