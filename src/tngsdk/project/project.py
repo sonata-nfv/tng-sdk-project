@@ -36,33 +36,36 @@ import sys
 import os
 import logging
 import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
-import shutil
-import pkg_resources
+import uuid
 import glob
 import mimetypes
-import argparse
-import coloredlogs
 from collections import defaultdict
 from tabulate import tabulate
 from tngsdk.project.workspace import Workspace
 from tngsdk.descriptorgen import descriptorgen
 
-
 log = logging.getLogger(__name__)
 
 
 class Project:
-
-    BACK_CONFIG_VERSION = "0.4"
-    CONFIG_VERSION = "0.5"
+    CONFIG_VERSION = "4.1"
 
     __descriptor_name__ = 'project.yml'
 
-    def __init__(self, workspace, prj_root, config=None):
+    def __init__(self, workspace, prj_root, config=None, fixed_uuid=None):
+        if fixed_uuid is not None:
+            self.uuid = fixed_uuid
+        else:
+            self.uuid = str(uuid.uuid4())
         self._prj_root = prj_root
         self._workspace = workspace
+        self.error_msg = None
         if config:
             self._prj_config = config
+            if 'uuid' in config['package']:
+                self.uuid = config['package']['uuid']
+            else:
+                log.warning("Couldn't retrieve the projects UUID.")
         else:
             self.load_default_config()
 
@@ -98,7 +101,8 @@ class Project:
                 'vendor': 'eu.5gtango',
                 'version': '0.1',
                 'maintainer': 'Name, Company, Contact',
-                'description': 'Some description about this sample'
+                'description': 'Some description about this sample',
+                'uuid': self.uuid
             },
             'descriptor_extension':
                 self._workspace.default_descriptor_extension,
@@ -106,7 +110,7 @@ class Project:
         }
 
     # create new project (empty or with descriptors by descriptorgen)
-    def create_prj(self, empty=False, dgn_args=None):
+    def create_prj(self, args):
         # create project root directory (if it doesn't exist)
         log.info('Creating project at {}'.format(self._prj_root))
         if os.path.isdir(self._prj_root):
@@ -116,18 +120,18 @@ class Project:
         os.makedirs(self._prj_root, exist_ok=False)
 
         # create subdirs, sample descriptors, and project.yml
-        if empty:
+        if args.empty:
             log.debug('Creating empty project (no folders or sample files)')
         else:
-            self._gen_descriptors(dgn_args)
+            self._gen_descriptors(args)
         self._write_prj_yml()
 
     # generate descriptors using the descriptorgen module and specified args
-    def _gen_descriptors(self, dgn_args):
-        dgn_args.out_path = self._prj_root
+    def _gen_descriptors(self, args):
+        args.out_path = self._prj_root
         log.info("Generating descriptors")
-        log.debug("Descriptor generation args: {}".format(dgn_args))
-        descriptorgen.generate(dgn_args)
+        log.debug("Descriptor generation args: {}".format(args))
+        descriptorgen.generate(args)
 
         # add generated files to project manifest
         log.debug("Adding generated descriptors to project manifest")
@@ -188,9 +192,9 @@ class Project:
         if type is None:
             type = self.mime_type(file_path)
         if type is None:
-            log.error('Could not detect MIME type of {}. Please specify using'
-                      'the -t argument.'.format(file_path))
-            return
+            log.warning('Could not detect MIME type of {}. Using "application/octet-stream".'.format(file_path))
+            self.error_msg = 'Could not detect MIME type of {}. Using "application/octet-stream".'.format(file_path)
+            type = "application/octet-stream"       # default MIME type
 
         # set tags accordingly
         tags = []
@@ -243,11 +247,15 @@ class Project:
         log.warning('{} is not in project.yml'.format(file_path))
 
     # prints project info/status
-    def project_status(self):
+    def status(self):
         # print general info
         print('Project: {}'.format(self._prj_config['package']['name']))
         print('Vendor: {}'.format(self._prj_config['package']['vendor']))
         print('Version: {}'.format(self._prj_config['package']['version']))
+        if 'uuid' in self._prj_config['package']:
+            print('UUID: {}'.format(self._prj_config['package']['uuid']))
+        else:
+            print('UUID: None')
         print(self._prj_config['package']['description'])
 
         if 'files' not in self._prj_config:
@@ -332,181 +340,41 @@ class Project:
 
         return True
 
+    # loads a project using its project manifest (project.yml)
     @staticmethod
-    def __create_from_descriptor__(workspace, prj_root, translate=False):
-        """
-        Creates a Project object based on a configuration descriptor
-        :param prj_root: base path of the project
-        :return: Project object
-        """
+    def load_project(prj_root, workspace=None, translate=False):
+        # load default workspace if none specified
+        if workspace is None:
+            workspace = Workspace.load_workspace(Workspace.DEFAULT_WORKSPACE_DIR)
+
+        # check if project manifest exists
         prj_filename = os.path.join(prj_root, Project.__descriptor_name__)
         if not os.path.isdir(prj_root) or not os.path.isfile(prj_filename):
-            log.error("Unable to load project descriptor '{}'".format(prj_filename))
+            log.error("Unable to load project manifest '{}'".format(prj_filename))
             return None
 
-        log.info("Loading Project configuration '{}'".format(prj_filename))
-
+        # load project manifest
+        log.info("Loading project '{}'".format(prj_filename))
         with open(prj_filename, 'r') as prj_file:
             try:
                 prj_config = yaml.load(prj_file)
-
             except yaml.YAMLError as exc:
                 log.error("Error parsing descriptor file: {0}".format(exc))
                 return
-
             if not prj_config:
                 log.error("Couldn't read descriptor file: '{0}'".format(prj_file))
                 return
 
+        # create a new project object with the same manifest
         if prj_config['version'] == Project.CONFIG_VERSION:
             return Project(workspace, prj_root, config=prj_config)
 
-        # Protect against invalid versions
-        if prj_config['version'] < Project.BACK_CONFIG_VERSION and not translate:
-            log.error("Project configuration version '{0}' is no longer supported (<{1})."
-                      "To translate to new 5GTANGO project version use --translate"
-                      .format(prj_config['version'], Project.CONFIG_VERSION))
-            return
-        if prj_config['version'] > Project.CONFIG_VERSION and not translate:
-            log.error("Project configuration version '{0}' is ahead of the current supported version (={1})."
-                      "To translate to new 5GTANGO project version use --translate"
-                      .format(prj_config['version'], Project.CONFIG_VERSION))
-            return
-
-        # Make adjustments to support backwards compatibility
-        # 0.4
-        if prj_config['version'] == "0.4":
-
-            prj_config['package'] = {'name': prj_config['name'],
-                                     'vendor': prj_config['vendor'],
-                                     'version': '0.1',
-                                     'maintainer': prj_config['maintainer'],
-                                     'description': prj_config['description']
-                                     }
-            prj_config.pop('name')
-            prj_config.pop('vendor')
-            prj_config.pop('maintainer')
-            prj_config.pop('description')
-            log.warning("Loading project with an old configuration "
-                        "version ({0}). Modified project configuration: {1}"
-                        .format(prj_config['version'], prj_config))
+        # deal with different versions
+        if prj_config['version'] < Project.CONFIG_VERSION and not translate:
+            log.warning("Project version {} is outdated. To translate to new 5GTANGO project version use --translate"
+                        .format(prj_config['version']))
+        if prj_config['version'] > Project.CONFIG_VERSION:
+            log.warning("Project version {} is ahead of the current version {}."
+                        .format(prj_config['version'], Project.CONFIG_VERSION))
 
         return Project(workspace, prj_root, config=prj_config)
-
-
-def parse_args_project(input_args=None):
-    parser = argparse.ArgumentParser(description="5GTANGO SDK project")
-    parser.add_argument("-p", "--project",
-                        help="create a new project at the specified location",
-                        required=True)
-
-    parser.add_argument("-w", "--workspace",
-                        help="location of existing (or new) workspace. "
-                        "If not specified will assume '{}'"
-                        .format(Workspace.DEFAULT_WORKSPACE_DIR),
-                        required=False)
-
-    parser.add_argument("--empty",
-                        help="create an empty project (without sample files)",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("--debug",
-                        help="increases logging level to debug",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("--add",
-                        help="Add file to project",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("-t", "--type",
-                        help="MIME type of added file (only with --add)",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("--remove",
-                        help="Remove file from project",
-                        required=False,
-                        default=None)
-
-    parser.add_argument("--status",
-                        help="Show project file paths",
-                        required=False,
-                        action="store_true")
-
-    parser.add_argument("--translate",
-                        help="Translate old SONATA project to new 5GTANGO project",
-                        required=False,
-                        action="store_true")
-
-    if input_args is None:
-        input_args = sys.argv[1:]
-    return parser.parse_known_args(input_args)
-
-
-# create and return project
-def create_project(args=None, extra_args=None):
-    if args is None:
-        args, extra_args = parse_args_project()
-
-    if args.debug:
-        coloredlogs.install(level='DEBUG')
-    else:
-        coloredlogs.install(level='INFO')
-
-    # pass extra_args arguments to descriptorgen (to check if descriptorgen knows them)
-    dgn_args = None
-    if extra_args is not None:
-        log.debug("Passing these parameters to descriptorgen: {}".format(extra_args))
-        dgn_args = descriptorgen.parse_args(extra_args)
-
-    # use specified workspace or default
-    if args.workspace:
-        ws_root = os.path.expanduser(args.workspace)
-    else:
-        ws_root = Workspace.DEFAULT_WORKSPACE_DIR
-
-    ws = Workspace.__create_from_descriptor__(ws_root)
-    if not ws:
-        print("Could not find a 5GTANGO workspace at the specified location",
-              file=sys.stderr)
-        exit(1)
-
-    prj_root = os.path.expanduser(args.project)
-
-    if args.add:
-        # load project and add file to project.yml
-        log.debug("Attempting to add file {}".format(args.add))
-        proj = Project.__create_from_descriptor__(ws, prj_root)
-        proj.add_file(args.add, type=args.type)
-
-    elif args.remove:
-        # load project and remove file from project.yml
-        log.debug("Attempting to remove file {}".format(args.remove))
-        proj = Project.__create_from_descriptor__(ws, prj_root)
-        proj.remove_file(args.remove)
-
-    elif args.status:
-        # load project and show status
-        log.debug("Attempting to show project status")
-        proj = Project.__create_from_descriptor__(ws, prj_root)
-        proj.project_status()
-
-    elif args.translate:
-        proj = Project.__create_from_descriptor__(ws, prj_root, translate=True)
-        proj.translate()
-
-    else:
-        # create project
-        log.debug("Attempting to create a new project")
-        proj = Project(ws, prj_root)
-        proj.create_prj(args.empty, dgn_args)
-        log.debug("Project created.")
-
-    return proj
-
-
-if __name__ == '__main__':
-    project = create_project()

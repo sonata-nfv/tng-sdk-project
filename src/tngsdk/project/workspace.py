@@ -225,7 +225,7 @@ class Workspace:
         return os.path.exists(ws_file) or os.path.exists(self.workspace_root)
 
     @staticmethod
-    def __create_from_descriptor__(ws_root):
+    def load_workspace(ws_root):
         """
         Creates a Workspace object based on a configuration descriptor
         :param ws_root: base path of the workspace
@@ -416,7 +416,8 @@ def init_workspace(args=None):
             print("A workspace already exists in {}. "
                   "Please specify a different location.\n"
                   .format(ws_root), file=sys.stderr)
-            exit(1)
+            log.warning("A workspace already exists in {}.".format(ws_root))
+            return
 
     else:
         ws_root = os.path.expanduser(args.workspace)

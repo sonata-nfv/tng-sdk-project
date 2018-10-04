@@ -37,7 +37,9 @@ import os
 import shutil
 import yaml
 import tngsdk.project.workspace as workspace
-import tngsdk.project.project as cli
+from tngsdk.project.workspace import Workspace
+import tngsdk.cli as cli
+from tngsdk.project.project import Project
 
 
 class TestProjectCLI:
@@ -60,7 +62,7 @@ class TestProjectCLI:
     # create and return a new temporary project 'test-project'
     @pytest.fixture(scope='module')
     def project(self, workspace):
-        args, extra_ars = cli.parse_args_project([
+        args = cli.parse_args([
             '-p', 'test-project',
             '-w', workspace,
             '--debug',
@@ -68,11 +70,22 @@ class TestProjectCLI:
             '--vendor', 'test.vendor',
             '--vnfs', '2'
         ])
-        project = cli.create_project(args, extra_ars)
+        project = cli.dispatch(args)
         assert os.path.isdir('test-project')
         assert os.path.isfile(os.path.join('test-project', 'project.yml'))
         yield project
         shutil.rmtree('test-project')
+
+    # load example-project: ensure loading works and example is up-to-date
+    def test_load_example_project(self, capsys, workspace):
+        ws = Workspace.load_workspace(workspace)
+        project = Project.load_project('example-project', workspace=ws)
+        project.status()
+
+        # assert that the status is printed correctly
+        stdout = capsys.readouterr().out
+        assert all(x in stdout for x in ['Project:', 'Vendor:', 'Version:', 'UUID:'])
+        assert all(x in stdout for x in ['MIME type', 'Quantity'])
 
     # check generated descriptors (integration with descriptorgen)
     def test_generated_descriptors(self, project):
@@ -106,13 +119,13 @@ class TestProjectCLI:
         assert os.path.isfile(file_path)
 
         # add to project.yml
-        args, extra_args = cli.parse_args_project([
+        args = cli.parse_args([
             '-w', workspace,
             '-p', str(project_path),
             '--add', str(file_path),
             '--debug'
         ])
-        cli.create_project(args, extra_args)
+        cli.dispatch(args)
         project_yml_path = os.path.join(project_path, 'project.yml')
         with open(project_yml_path) as open_file:
             project_yml = yaml.load(open_file)
@@ -120,13 +133,13 @@ class TestProjectCLI:
             assert 'sample.txt' in project_files
 
         # remove sample.txt
-        args, extra_args = cli.parse_args_project([
+        args = cli.parse_args([
             '-w', workspace,
             '-p', str(project.project_root),
             '--remove', os.path.join(project.project_root, 'sample.txt'),
             '--debug'
         ])
-        project = cli.create_project(args, extra_args)
+        project = cli.dispatch(args)
 
         # check if NSD was removed
         with open(project_yml_path) as open_file:

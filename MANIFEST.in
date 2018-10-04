@@ -1,2 +1,1 @@
 include src/tngsdk/descriptorgen/default-descriptors/*
-include src/tngsdk/project/samples/*

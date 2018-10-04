@@ -92,7 +92,7 @@ class CreateWorkspaceTests(unittest.TestCase):
 
         # Assure that None is returned using
         # non-existent root dir and config file
-        self.assertEqual(Workspace.__create_from_descriptor__("/test"), None)
+        self.assertEqual(Workspace.load_workspace("/test"), None)
 
         # Assure that an error message was logged
         self.assertTrue(m_log.error.called)
@@ -136,7 +136,7 @@ class CreateWorkspaceTests(unittest.TestCase):
 
         # Ensure that a valid Workspace object is returned
         self.assertIsInstance(
-            Workspace.__create_from_descriptor__(None),
+            Workspace.load_workspace(None),
             Workspace
         )
 
@@ -177,7 +177,7 @@ class CreateWorkspaceTests(unittest.TestCase):
         m_yaml.load.return_value = cfg_d
 
         # Call function
-        new_ws = Workspace.__create_from_descriptor__(ws.workspace_root)
+        new_ws = Workspace.load_workspace(ws.workspace_root)
 
         # Assert returned workspace configuration is equal to the previous
         self.assertEqual(ws, new_ws)

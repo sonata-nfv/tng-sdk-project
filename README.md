@@ -41,7 +41,8 @@ source venv/bin/activate
 
 ## Usage
 
-### Workspace
+### CLI
+#### Workspace
 To start working, you need a workspace that holds your configuration files. The default location is `~/.tng-workspace/`, but it may be at any location and there can also be multiple workspaces.
 
 ```bash
@@ -49,7 +50,7 @@ $ tng-workspace       # initializes a new workspace at the default location
 $ tng-workspace --workspace path/to/workspace     # inits a workspace at a custom location
 ```
 
-### Project managament
+#### Project managament
 Once you have a workspace, you can create projects with the `tng-project` command.
 You can also add or remove files from the project (wildcards allowed) or check the project status.
 
@@ -71,7 +72,7 @@ For more information see the [corresponding wiki page](https://github.com/sonata
 $ tng-project -p path/to/old-project --translate   # translates the project to the new structure
 ```
 
-### Descriptor generation (CLI)
+#### Descriptor generation (CLI)
 This tool also includes a CLI for descriptor generation. 
 Its functionality is mostly consistent with the [GUI version](https://github.com/sonata-nfv/tng-sdk-descriptorgen) but my be preferrable to advanced users.
 
@@ -92,6 +93,61 @@ $ tng-descriptorgen --osm -o osm-project            # generate only OSM descript
 ```
 
 For more information, use `tng-descriptorgen -h`.
+
+
+### Service mode with REST API
+
+**Run on bare metal:**
+
+```bash
+# terminal 1
+$ tng-project -s    # starts the tool in service mode (running forever)
+```
+
+This will start the tool in service mode running in the terminal forever until stopped with Ctrl+C.
+
+**Run in Docker container:**
+
+```bash
+pipeline/build/build.sh
+docker run --rm -d -p 5098:5098 --name tng-sdk-project registry.sonata-nfv.eu:5000/tng-sdk-project
+```
+
+This will run the tool in service mode in a detached Docker container, i.e., in the background.
+See the [wiki page on Docker deployment](https://github.com/sonata-nfv/tng-sdk-project/wiki/docker-deployment) for additional details.
+
+**Calling the REST API**
+
+Showing, adding, deleting projects:
+```bash
+# terminal 2
+$ curl -X GET localhost:5098/api/v1/projects             # show all projects
+$ curl -X POST localhost:5098/api/v1/projects            # create a new project
+$ curl -X POST localhost:5098/api/v1/projects \
+-d author=alice -d vendor=eu.tango -d vnfs=3               # new project with custom-generated descriptors
+$ curl -X GET localhost:5098/api/v1/projects/{uuid}      # show details of the specified project
+$ curl -X DELETE localhost:5098/api/v1/projects/{uuid}   # delete the specified project
+```
+
+Showing, adding, deleting project files:
+```bash
+# terminal 2
+$ curl -X GET localhost:5098/api/v1/projects/{uuid}/files   # show files of the specified project
+$ curl -X POST localhost:5098/api/v1/projects/{uuid}/files \
+    -H "Content-Type: multipart/form-data" \
+    -F file="@requirements.txt"                             # add new file to the project
+$ curl -X POST localhost:5098/api/v1/projects/{uuid}/files \
+    -H "Content-Type: multipart/form-data" \
+    -F file="@LICENSE" -F file_type="text/plain"            # add new file with specific MIME type
+$ curl -X DELETE localhost:5098/api/v1/projects/{uuid}/files \
+    -d filename="requirements.txt"                          # remove the specified file
+```
+
+*Note:* If using the Docker deployment, replace `localhost` with the IP address of the Docker host.
+
+**REST API Swagger Specification**
+
+Find the API specification [here](swagger.peuster.de/?url=https://raw.githubusercontent.com/sonata-nfv/tng-sdk-project/master/docs/rest_api.json).
 
 ## Documentation
 

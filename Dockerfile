@@ -29,14 +29,18 @@
 # the Horizon 2020 and 5G-PPP programmes. The authors would like to
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
+
 FROM python:3.6-slim
 MAINTAINER 5GTANGO
 
+# install
 RUN pip install pycodestyle
-
 ADD . /tng-sdk-project
-
 WORKDIR /tng-sdk-project
 RUN python setup.py install
 
-CMD [ "/bin/bash" ]
+
+# run
+EXPOSE 5098
+CMD ["tng-project", "-s"]
+
