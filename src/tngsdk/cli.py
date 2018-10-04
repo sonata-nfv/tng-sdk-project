@@ -130,7 +130,7 @@ def parse_args(input_args=None):
     parser.add_argument("--address",
                         help="Listen address of REST API when in service mode.",
                         required=False,
-                        default="localhost",
+                        default="0.0.0.0",
                         dest="service_address")
 
     parser.add_argument("--port",
