@@ -416,7 +416,8 @@ def init_workspace(args=None):
             print("A workspace already exists in {}. "
                   "Please specify a different location.\n"
                   .format(ws_root), file=sys.stderr)
-            exit(1)
+            log.warning("A workspace already exists in {}.".format(ws_root))
+            return
 
     else:
         ws_root = os.path.expanduser(args.workspace)

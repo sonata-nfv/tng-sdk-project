@@ -34,6 +34,7 @@ import logging
 import coloredlogs
 import os
 from tngsdk import rest, cli
+from tngsdk.project import workspace
 
 log = logging.getLogger(os.path.basename(__file__))
 
@@ -54,6 +55,8 @@ def main(args=None):
 
     # start service with REST API
     if args.service:
+        # create the default workspace (required to serve)
+        workspace.init_workspace(args)
         rest.serve_forever(args)
     # or use CLI
     else:
