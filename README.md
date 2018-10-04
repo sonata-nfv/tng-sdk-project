@@ -26,6 +26,8 @@ $ cd tng-sdk-project
 $ python setup.py install
 ```
 
+We recommend installing all 5GTANGO SDK tools in a separate [virtual environment](https://virtualenv.pypa.io/en/stable/).
+
 ## Usage
 
 ### CLI
@@ -91,6 +93,8 @@ For more information, use `tng-descriptorgen -h`.
 $ tng-project -s    # starts the tool in service mode (running forever)
 ```
 
+This will start the tool in service mode running in the terminal forever until stopped with Ctrl+C.
+
 **Run in Docker container:**
 
 ```bash
@@ -98,10 +102,10 @@ pipeline/build/build.sh
 docker run --rm -d -p 5098:5098 --name tng-sdk-project registry.sonata-nfv.eu:5000/tng-sdk-project
 ```
 
-**Connect to detached container (e.g., for debugging):**
-```bash
+This will run the tool in service mode in a detached Docker container, i.e., in the background.
+See the [wiki page on Docker deployment](https://github.com/sonata-nfv/tng-sdk-project/wiki/docker-deployment) for additional details.
 
-```
+**Calling the REST API**
 
 Showing, adding, deleting projects:
 ```bash
@@ -128,7 +132,11 @@ $ curl -X DELETE localhost:5098/api/v1/projects/{uuid}/files \
     -d filename="requirements.txt"                          # remove the specified file
 ```
 
-TODO: Link to Swagger spec
+*Note:* If using the Docker deployment, replace `localhost` with the IP address of the Docker host.
+
+**REST API Swagger Specification**
+
+TODO
 
 ## Documentation
 
