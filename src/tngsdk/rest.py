@@ -104,7 +104,7 @@ file_upload_parser.add_argument("file_type",
                                 help="MIME type of an uploaded file")
 
 filename_parser = api_v1.parser()
-filename_parser.add_argument("filename", location="form", required=True, help="Filename of the file to remove")
+filename_parser.add_argument("filename", required=True, help="Filename of the file to remove")
 
 # models for marshaling return values from the API (also used for generating Swagger spec)
 ping_get_model = api_v1.model("PingGet", {
