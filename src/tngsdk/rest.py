@@ -61,39 +61,32 @@ api.add_namespace(api_v1)
 # parser arguments: for input parameters sent to the API
 project_parser = api_v1.parser()
 project_parser.add_argument("author",
-                            location="form",
                             required=False,
                             default='eu.tango',
                             help="Service author")
 project_parser.add_argument("vendor",
-                            location="form",
                             required=False,
                             default='eu.tango',
                             help="Service vendor")
 project_parser.add_argument("name",
-                            location="form",
                             required=False,
                             default='example-service',
                             help="Service name")
 project_parser.add_argument("description",
-                            location="form",
                             required=False,
                             default='Example description',
                             help="Service description")
 project_parser.add_argument("vnfs",
-                            location="form",
                             type=int,
                             required=False,
                             default=1,
                             help="Number of VNFs in the service")
 project_parser.add_argument("only_tango",
-                            location="form",
                             type=bool,
                             required=False,
                             default=False,
                             help="Generate only 5GTANGO descriptors")
 project_parser.add_argument("only_osm",
-                            location="form",
                             type=bool,
                             required=False,
                             default=False,
@@ -106,13 +99,12 @@ file_upload_parser.add_argument("file",
                                 required=True,
                                 help="Uploaded file to add to project")
 file_upload_parser.add_argument("file_type",
-                                location="form",
                                 required=False,
                                 default=None,
                                 help="MIME type of an uploaded file")
 
 filename_parser = api_v1.parser()
-filename_parser.add_argument("filename", location="form", required=True, help="Filename of the file to remove")
+filename_parser.add_argument("filename", required=True, help="Filename of the file to remove")
 
 # models for marshaling return values from the API (also used for generating Swagger spec)
 ping_get_model = api_v1.model("PingGet", {
