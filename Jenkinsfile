@@ -27,6 +27,13 @@ pipeline {
                 sh "pipeline/checkstyle/check.sh"
             }
         }
+        stage('Integration tests (SDK-tools)')
+        {
+            steps {
+                echo 'Stage: Integration tests agains other SDK tools...'
+                build job "tng-sdk-package-pipeline"
+            }
+        }
         stage('Container publication') {
             steps {
                 echo 'Stage: Container publication...'
