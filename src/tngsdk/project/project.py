@@ -57,6 +57,11 @@ class Project:
             self.uuid = fixed_uuid
         else:
             self.uuid = str(uuid.uuid4())
+        # be able to hanlde different workspace inputs
+        if workspace is None or isinstance(workspace, str):
+            # workspace is a string
+            # treat it as path and auto-load
+            workspace = Workspace.load_workspace(workspace)
         self._prj_root = prj_root
         self._workspace = workspace
         self.error_msg = None

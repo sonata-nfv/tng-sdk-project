@@ -231,6 +231,8 @@ class Workspace:
         :param ws_root: base path of the workspace
         :return: Workspace object
         """
+        if ws_root is None:
+            ws_root = Workspace.DEFAULT_WORKSPACE_DIR
         ws_filename = os.path.join(ws_root, Workspace.__descriptor_name__)
         if not os.path.isdir(ws_root) or not os.path.isfile(ws_filename):
             log.error("Unable to load workspace descriptor '{}'. "
