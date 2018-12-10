@@ -29,7 +29,9 @@ pipeline {
         }
         stage('Integration tests (SDK-tools)')
         {
-            build job: "tng-sdk-package-pipeline" 
+            steps {
+                build job: "tng-sdk-package-pipeline"
+            }
         }
         stage('Container publication') {
             steps {
