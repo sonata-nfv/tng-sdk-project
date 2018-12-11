@@ -37,8 +37,9 @@ MAINTAINER 5GTANGO
 RUN pip install pycodestyle
 ADD . /tng-sdk-project
 WORKDIR /tng-sdk-project
-RUN python setup.py install
+RUN python setup.py develop
 
+RUN chmod +x pipeline/unittest/test_sdk_integration.sh
 
 # run
 EXPOSE 5098
