@@ -30,7 +30,8 @@ pipeline {
         stage('Integration tests (SDK-tools)')
         {
             steps {
-                build job: "tng-sdk-package-pipeline"
+                echo 'Stage: Integration tests (SDK-tools)'
+                sh "docker run --rm --name tng-sdk-project-int registry.sonata-nfv.eu:5000/tng-sdk-project pipeline/unittest/test_sdk_integration.sh"
             }
         }
         stage('Container publication') {

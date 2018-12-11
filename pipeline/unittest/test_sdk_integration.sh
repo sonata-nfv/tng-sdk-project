@@ -9,10 +9,13 @@
 # to test the integration)
 
 set  -e
+echo "== SDK integration tests: Prepare..."
+tng-wks
 
 echo "== SDK integration tests: Intall requirements..."
 apt-get update && apt-get install -y git
 pip install flake8
+
 echo "== SDK integration tests: Install tng-sdk-validate..."
 cd /
 git clone https://github.com/sonata-nfv/tng-sdk-validation.git
@@ -27,9 +30,9 @@ cd /tng-sdk-package
 python setup.py develop
 tng-sdk-package -h
 
-echo "== SDK integration tests: Run tests..."
+echo "== SDK integration tests: Run tng-sdk-package tests..."
 cd /tng-sdk-package
 pytest -v
 
-echo "== SDK integration tests: DONE."
+echo "== SDK integration tests: PASSED."
 cd /tng-sdk-project
