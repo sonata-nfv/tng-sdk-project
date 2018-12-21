@@ -1,11 +1,11 @@
-version: '4.1'
+version: '0.5'
+uuid: 34eff718-da8a-40fc-94fa-341ac3c7b1db
 package:
   name: 5gtango-project-sample
   vendor: eu.5gtango
   version: '0.1'
   maintainer: Name, Company, Contact
   description: Some description about this sample
-  uuid: 84cadef0-2062-42e4-8cef-5ddedd4a7249
 descriptor_extension: yml
 files:
 - path: osm_nsd.yml
