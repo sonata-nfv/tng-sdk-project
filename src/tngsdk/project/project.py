@@ -53,10 +53,6 @@ class Project:
     __descriptor_name__ = 'project.yml'
 
     def __init__(self, workspace, prj_root, config=None, fixed_uuid=None):
-        if fixed_uuid is not None:
-            self.uuid = fixed_uuid
-        else:
-            self.uuid = str(uuid.uuid4())
         # be able to hanlde different workspace inputs
         if workspace is None or isinstance(workspace, str):
             # workspace is a string
@@ -65,13 +61,19 @@ class Project:
         self._prj_root = prj_root
         self._workspace = workspace
         self.error_msg = None
+
+        # set UUID, if necessary override
+        self.uuid = str(uuid.uuid4())
+        if fixed_uuid is not None:
+            self.uuid = fixed_uuid
+
         if config:
             self._prj_config = config
-            if 'uuid' in config['package']:
-                self.uuid = config['package']['uuid']
+            if 'uuid' in config:
+                self.uuid = config['uuid']
             else:
                 log.debug("Couldn't retrieve the projects UUID. Creating a new one,")
-                self._prj_config['package']['uuid'] = self.uuid
+                self._prj_config['uuid'] = self.uuid
                 self._write_prj_yml()
         else:
             self.load_default_config()
@@ -103,13 +105,13 @@ class Project:
     def load_default_config(self):
         self._prj_config = {
             'version': self.CONFIG_VERSION,
+            'uuid': self.uuid,
             'package': {
                 'name': '5gtango-project-sample',
                 'vendor': 'eu.5gtango',
                 'version': '0.1',
                 'maintainer': 'Name, Company, Contact',
-                'description': 'Some description about this sample',
-                'uuid': self.uuid
+                'description': 'Some description about this sample'
             },
             'descriptor_extension':
                 self._workspace.default_descriptor_extension,
@@ -259,8 +261,8 @@ class Project:
         print('Project: {}'.format(self._prj_config['package']['name']))
         print('Vendor: {}'.format(self._prj_config['package']['vendor']))
         print('Version: {}'.format(self._prj_config['package']['version']))
-        if 'uuid' in self._prj_config['package']:
-            print('UUID: {}'.format(self._prj_config['package']['uuid']))
+        if 'uuid' in self._prj_config:
+            print('UUID: {}'.format(self._prj_config['uuid']))
         else:
             print('UUID: None')
         print(self._prj_config['package']['description'])
