@@ -48,7 +48,7 @@ log = logging.getLogger(__name__)
 
 
 class Project:
-    CONFIG_VERSION = "4.1"
+    CONFIG_VERSION = "0.5"
 
     __descriptor_name__ = 'project.yml'
 
@@ -376,8 +376,8 @@ class Project:
 
         # deal with different versions
         if prj_config['version'] < Project.CONFIG_VERSION and not translate:
-            log.warning("Project version {} is outdated. To translate to new 5GTANGO project version use --translate"
-                        .format(prj_config['version']))
+            log.warning("Project version {} is outdated (current: {}). To translate to new 5GTANGO project version use "
+                        "--translate".format(prj_config['version'], Project.CONFIG_VERSION))
         if prj_config['version'] > Project.CONFIG_VERSION:
             log.warning("Project version {} is ahead of the current version {}."
                         .format(prj_config['version'], Project.CONFIG_VERSION))
