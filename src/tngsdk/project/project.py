@@ -70,7 +70,9 @@ class Project:
             if 'uuid' in config['package']:
                 self.uuid = config['package']['uuid']
             else:
-                log.warning("Couldn't retrieve the projects UUID.")
+                log.debug("Couldn't retrieve the projects UUID. Creating a new one,")
+                self._prj_config['package']['uuid'] = self.uuid
+                self._write_prj_yml()
         else:
             self.load_default_config()
 
