@@ -24,7 +24,7 @@ Alternatively, for obtaining the source code, installation, and development:
 ```bash
 $ git clone https://github.com/sonata-nfv/tng-sdk-project.git
 $ cd tng-sdk-project
-$ sudo python setup.py install
+$ sudo python3 setup.py install
 ```
 
 It is a good practice to first create a new virtual environment in which all 5GTANGO SDK tools can be installed. You can do this as follows:
