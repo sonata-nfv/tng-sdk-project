@@ -81,6 +81,12 @@ project_parser.add_argument("vnfs",
                             required=False,
                             default=1,
                             help="Number of VNFs in the service")
+# project_parser.add_argument("image_names",
+#                             type=str,
+#                             required=False,
+#                             action='append',
+#                             default=[],
+#                             help="List of VNF image names")
 project_parser.add_argument("only_tango",
                             type=bool,
                             required=False,

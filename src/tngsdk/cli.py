@@ -111,6 +111,9 @@ def parse_args(input_args=None):
                         dest='description')
     parser.add_argument('--vnfs', help='set a specific number of VNFs',
                         type=int, required=False, default=1, dest='vnfs')
+    parser.add_argument('--image_names',
+                        help='list of image names for the VNFs',
+                        nargs='*', required=False, default='')
 
     # service management
     parser.add_argument("-s", "--service",
@@ -188,6 +191,11 @@ def dispatch(args, fixed_uuid=None):
     else:
         # create project
         log.debug("Attempting to create a new project")
+
+        log.info('VNF images: {}'.format(args.image_names))
+        if args.vnfs != len(args.image_names):
+            log.warning("Number of VNFs and VNF image names don't match."
+                        " Using default image names if necessary.")
         proj = Project(ws, prj_root, fixed_uuid=fixed_uuid)
         proj.create_prj(args)
         log.debug("Project created.")

@@ -22,6 +22,15 @@ def generate_descriptors(user_inputs, log):
         vnfd['vnfd-catalog']['vnfd'][0]['name'] = 'default-vnf{}'.format(i)
         vnfd['vnfd-catalog']['vnfd'][0]['short-name'] = 'default-vnf{}'.format(i)
         vnfd['vnfd-catalog']['vnfd'][0]['vendor'] = user_inputs.vendor
+
+        # add VNF image name and type if available
+        if i < len(user_inputs.image_names):
+            log.debug("VNF image {}: {}".format(i, user_inputs.image_names[i]))
+            vnfd['vnfd-catalog']['vnfd'][0]['vdu'][0]['image'] = \
+                user_inputs.image_names[i]
+        else:
+            log.debug("Using default image for VNF {}".format(i))
+
         vnfds.append(vnfd)
 
     # generate NSD
