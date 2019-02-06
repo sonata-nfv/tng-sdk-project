@@ -82,13 +82,16 @@ such that additional arguments are passed to the descriptor generator
 and are used to generate suitable descriptors in a new project:
 
 ```bash
-$ tng-project -p path/to/project --author abc --vnfs 3   # creates a new project with descriptors for 3 VNFs and the specified author
+$ tng-project -p path/to/project --author abc --vnfs 2 \  
+  --image_names img1 img2 --image_types docker docker     # creates a new project with descriptors for 2 VNFs with the specified author and images
 ```
 
 The descriptorgen CLI can also be used separately as follows:
 
 ```bash
 $ tng-descriptorgen --author author.name --vnfs 3   # generate NSD and VNFDs for service with 3 VNFs
+$ tng-descriptorgen --author author.name --vnfs 2 \
+  --image_names img1 img2 --image_types docker docker  # generate descriptors for 2 VNFs with specific images
 $ tng-descriptorgen --tango -o tango-project        # generate only 5GTANGO descriptors in a folder "tango-project"
 $ tng-descriptorgen --osm -o osm-project            # generate only OSM descriptors in a folder "osm-project"
 ```

@@ -123,6 +123,29 @@ projects_post_model = api_v1.model("ProjectsPost", {
     "uuid": fields.String(description="project UUID", required=True),
     "error_msg": fields.String(description="error message")
 })
+project_get_model = api_v1.model("ProjectGet", {
+    "project_uuid": fields.String(description="project UUID", required=True),
+    "manifest": fields.String(description="project manifest", required=True),
+    "error_msg": fields.String(description="error message")
+})
+project_delete_model = api_v1.model("ProjectDelete", {
+    "project_uuid": fields.String(description="project UUID", required=True)
+})
+files_get_model = api_v1.model("FilesGet", {
+    "project_uuid": fields.String(description="project UUID"),
+    "files": fields.List(fields.String, description="list of all project files"),
+    "error_msg": fields.String(description="error message")
+})
+files_post_model = api_v1.model("FilesPost", {
+    "project_uuid": fields.String(description="project UUID"),
+    "filename": fields.String(description="added file"),
+    "error_msg": fields.String(description="error message")
+})
+files_delete_model = api_v1.model("FilesDelete", {
+    "project_uuid": fields.String(description="project UUID"),
+    "removed_file": fields.String(description="deleted file"),
+    "error_msg": fields.String(description="error message")
+})
 
 
 def dump_swagger():
@@ -145,7 +168,6 @@ def serve_forever(args, debug=True):
 
 @api_v1.route("/pings")
 class Ping(Resource):
-    @api_v1.response(200, "OK")
     @api_v1.marshal_with(ping_get_model)
     def get(self):
         """Health check: Respond with current uptime"""
@@ -159,7 +181,6 @@ class Ping(Resource):
 
 @api_v1.route("/projects")
 class Projects(Resource):
-    @api_v1.response(200, 'OK')
     @api_v1.marshal_with(projects_get_model)
     def get(self):
         """Get list of projects"""
@@ -169,7 +190,6 @@ class Projects(Resource):
     # TODO: check UUID in project manifest? should be consistent to project dir name anyways
 
     @api_v1.expect(project_parser)
-    @api_v1.response(200, 'OK')
     @api_v1.marshal_with(projects_post_model)
     def post(self):
         """Create a new project and generate descriptors with the given args"""
@@ -190,7 +210,7 @@ class Projects(Resource):
                 if v:
                     dgn_args.append('--osm')
             else:
-                # process non-string args (CLI only accepts string)
+                # convert #vnfs from int to str (CLI only accepts string)
                 if k == 'vnfs':
                     v = str(v)
                 # add '--' as prefix for each key to be consistent with CLI
@@ -206,6 +226,7 @@ class Projects(Resource):
 
 @api_v1.route("/projects/<string:project_uuid>")
 class Project(Resource):
+    @api_v1.marshal_with(project_get_model)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def get(self, project_uuid):
@@ -219,6 +240,7 @@ class Project(Resource):
         project = cli_project.load_project(project_path)
         return {"project_uuid": project.uuid, "manifest": project.project_config, "error_msg": project.error_msg}
 
+    @api_v1.marshal_with(project_delete_model)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def delete(self, project_uuid):
@@ -236,6 +258,7 @@ class Project(Resource):
 @api_v1.route("/projects/<string:project_uuid>/files")
 class ProjectFiles(Resource):
     # get list of project files
+    @api_v1.marshal_with(files_get_model)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def get(self, project_uuid):
@@ -250,6 +273,7 @@ class ProjectFiles(Resource):
         return {"project_uuid": project.uuid, "files": project.project_config["files"]}
 
     @api_v1.expect(file_upload_parser)
+    @api_v1.marshal_with(files_post_model)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     def post(self, project_uuid):
@@ -277,6 +301,7 @@ class ProjectFiles(Resource):
         return {"project_uuid": project.uuid, "filename": file.filename, "error_msg": project.error_msg}
 
     @api_v1.expect(filename_parser)
+    @api_v1.marshal_with(files_delete_model)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project or file not found")
     def delete(self, project_uuid):
