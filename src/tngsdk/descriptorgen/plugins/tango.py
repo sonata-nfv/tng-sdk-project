@@ -21,6 +21,24 @@ def generate_descriptors(user_inputs, log):
     for i in range(int(user_inputs.vnfs)):
         vnfd = copy.deepcopy(tango_default_vnfd)
         vnfd['name'] = 'default-vnf{}'.format(i)
+
+        # add VNF image name if available
+        if i < len(user_inputs.image_names):
+            log.debug("VNF {} image name: {}"
+                      .format(i, user_inputs.image_names[i]))
+            vnfd['virtual_deployment_units'][0]['vm_image'] = \
+                user_inputs.image_names[i]
+        else:
+            log.debug("Using default image name for VNF {}".format(i))
+        # add VNF image name if available
+        if i < len(user_inputs.image_types):
+            log.debug("VNF {} image type: {}"
+                      .format(i, user_inputs.image_types[i]))
+            vnfd['virtual_deployment_units'][0]['vm_image_format'] = \
+                user_inputs.image_types[i]
+        else:
+            log.debug("Using default image type for VNF {}".format(i))
+
         vnfds.append(vnfd)
 
     # generate NSD

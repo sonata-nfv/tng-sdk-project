@@ -110,7 +110,13 @@ def parse_args(input_args=None):
                         required=False, default='Default description',
                         dest='description')
     parser.add_argument('--vnfs', help='set a specific number of VNFs',
-                        required=False, default=1, dest='vnfs')
+                        type=int, required=False, default=1, dest='vnfs')
+    parser.add_argument('--image_names',
+                        help='list of VNF image names (default: ubuntu)',
+                        nargs='*', required=False, default='')
+    parser.add_argument('--image_types',
+                        help='list of VNF image types (default: docker)',
+                        nargs='*', required=False, default='')
 
     # service management
     parser.add_argument("-s", "--service",
@@ -188,6 +194,14 @@ def dispatch(args, fixed_uuid=None):
     else:
         # create project
         log.debug("Attempting to create a new project")
+
+        if args.vnfs != len(args.image_names):
+            log.info("Number of VNFs and VNF image names don't match."
+                     " Using default image names if necessary.")
+        if args.vnfs != len(args.image_types):
+            log.info("Number of VNFs and VNF image types don't match."
+                     " Using default image types if necessary.")
+
         proj = Project(ws, prj_root, fixed_uuid=fixed_uuid)
         proj.create_prj(args)
         log.debug("Project created.")

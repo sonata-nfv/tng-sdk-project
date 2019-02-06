@@ -131,6 +131,8 @@ class Project:
         # create subdirs, sample descriptors, and project.yml
         if args.empty:
             log.debug('Creating empty project (no folders or sample files)')
+        elif args.vnfs <= 0:
+            log.info('Num. VNFs set to 0 (or below). Creating empty project.')
         else:
             self._gen_descriptors(args)
         self._write_prj_yml()
