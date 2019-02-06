@@ -132,9 +132,15 @@ project_get_model = api_v1.model("ProjectGet", {
 project_delete_model = api_v1.model("ProjectDelete", {
     "project_uuid": fields.String(description="project UUID", required=True)
 })
+# model per file used for nested files type
+file_model = api_v1.model("File", {
+    'path': fields.String(attribute='path'),
+    'type': fields.String(attribute='type'),
+    'tags': fields.List(fields.String)
+})
 files_get_model = api_v1.model("FilesGet", {
     "project_uuid": fields.String(description="project UUID"),
-    "files": fields.List(fields.String, description="list of all project files"),
+    "files": fields.List(fields.Nested(api_v1.models['File']), description="list of all project files"),
     "error_msg": fields.String(description="error message")
 })
 files_post_model = api_v1.model("FilesPost", {
