@@ -81,6 +81,7 @@ project_parser.add_argument("vnfs",
                             required=False,
                             default=1,
                             help="Number of VNFs in the service")
+# can't easily pass the image_names to the CLI
 # project_parser.add_argument("image_names",
 #                             type=str,
 #                             required=False,
