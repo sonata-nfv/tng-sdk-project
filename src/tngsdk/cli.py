@@ -110,7 +110,7 @@ def parse_args(input_args=None):
                         required=False, default='Default description',
                         dest='description')
     parser.add_argument('--vnfs', help='set a specific number of VNFs',
-                        required=False, default=1, dest='vnfs')
+                        type=int, required=False, default=1, dest='vnfs')
 
     # service management
     parser.add_argument("-s", "--service",
