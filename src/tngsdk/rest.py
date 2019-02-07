@@ -81,13 +81,16 @@ project_parser.add_argument("vnfs",
                             required=False,
                             default=1,
                             help="Number of VNFs in the service")
-# can't easily pass the image_names to the CLI
-# project_parser.add_argument("image_names",
-#                             type=str,
-#                             required=False,
-#                             action='append',
-#                             default=[],
-#                             help="List of VNF image names")
+project_parser.add_argument("image_names",
+                            type=str,
+                            required=False,
+                            default="",
+                            help="List of VNF image names (space-separated)")
+project_parser.add_argument("image_types",
+                            type=str,
+                            required=False,
+                            default="",
+                            help="List of VNF image types (space-separated)")
 project_parser.add_argument("only_tango",
                             type=bool,
                             required=False,
@@ -216,6 +219,10 @@ class Projects(Resource):
             elif k == 'only_osm':
                 if v:
                     dgn_args.append('--osm')
+            elif k == 'image_names' or k == 'image_types':
+                dgn_args.append('--' + k)
+                # split multiple image names/types and append all of them
+                dgn_args.extend(v.split(' '))
             else:
                 # convert #vnfs from int to str (CLI only accepts string)
                 if k == 'vnfs':

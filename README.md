@@ -128,7 +128,9 @@ Showing, adding, deleting projects:
 $ curl -X GET localhost:5098/api/v1/projects             # show all projects
 $ curl -X POST localhost:5098/api/v1/projects            # create a new project
 $ curl -X POST localhost:5098/api/v1/projects \
--d author=alice -d vendor=eu.tango -d vnfs=3               # new project with custom-generated descriptors
+-d author=alice -d vendor=eu.tango -d vnfs=3             # new project with custom-generated descriptors
+$ curl -X POST localhost:5098/api/v1/projects \
+-d vnfs=2 -d image_names="img1 img2"                     # you can specify image names/types as white space-separated list in quotation marks ("", not ''!) 
 $ curl -X GET localhost:5098/api/v1/projects/{uuid}      # show details of the specified project
 $ curl -X DELETE localhost:5098/api/v1/projects/{uuid}   # delete the specified project
 ```
