@@ -36,7 +36,6 @@ import sys
 import os
 import logging
 import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
-import uuid
 import glob
 import mimetypes
 from collections import defaultdict
@@ -52,7 +51,7 @@ class Project:
 
     __descriptor_name__ = 'project.yml'
 
-    def __init__(self, workspace, prj_root, config=None, fixed_uuid=None):
+    def __init__(self, workspace, prj_root, config=None):
         # be able to hanlde different workspace inputs
         if workspace is None or isinstance(workspace, str):
             # workspace is a string
@@ -62,19 +61,8 @@ class Project:
         self._workspace = workspace
         self.error_msg = None
 
-        # set UUID, if necessary override
-        self.uuid = str(uuid.uuid4())
-        if fixed_uuid is not None:
-            self.uuid = fixed_uuid
-
         if config:
             self._prj_config = config
-            if 'uuid' in config:
-                self.uuid = config['uuid']
-            else:
-                log.debug("Couldn't retrieve the projects UUID. Creating a new one,")
-                self._prj_config['uuid'] = self.uuid
-                self._write_prj_yml()
         else:
             self.load_default_config()
 
@@ -105,7 +93,6 @@ class Project:
     def load_default_config(self):
         self._prj_config = {
             'version': self.CONFIG_VERSION,
-            'uuid': self.uuid,
             'package': {
                 'name': '5gtango-project-sample',
                 'vendor': 'eu.5gtango',
@@ -263,10 +250,6 @@ class Project:
         print('Project: {}'.format(self._prj_config['package']['name']))
         print('Vendor: {}'.format(self._prj_config['package']['vendor']))
         print('Version: {}'.format(self._prj_config['package']['version']))
-        if 'uuid' in self._prj_config:
-            print('UUID: {}'.format(self._prj_config['uuid']))
-        else:
-            print('UUID: None')
         print(self._prj_config['package']['description'])
 
         if 'files' not in self._prj_config:

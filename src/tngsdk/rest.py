@@ -197,7 +197,6 @@ class Projects(Resource):
         log.info("GET to /projects. Loading available projects")
         project_dirs = [name for name in os.listdir('projects') if os.path.isdir(os.path.join('projects', name))]
         return {'projects': project_dirs}
-    # TODO: check UUID in project manifest? should be consistent to project dir name anyways
 
     @api_v1.expect(project_parser)
     @api_v1.marshal_with(projects_post_model)
@@ -208,8 +207,8 @@ class Projects(Resource):
 
         # transform args into array passed to the descriptorgen cli
         # create a new UUID for each project (to avoid whitespaces)
-        new_uuid = str(uuid.uuid4())
-        dgn_args = ['-p', os.path.join('projects', new_uuid)]
+        project_uuid = str(uuid.uuid4())
+        dgn_args = ['-p', os.path.join('projects', project_uuid)]
 
         for k, v in args.items():
             # only add --tango/--osm if value=True
@@ -233,9 +232,9 @@ class Projects(Resource):
         log.debug("CLI args: {}".format(dgn_args))
 
         cli_args = cli.parse_args(dgn_args)
-        project = cli.dispatch(cli_args, fixed_uuid=new_uuid)
+        project = cli.dispatch(cli_args)
 
-        return {'uuid': project.uuid, "error_msg": project.error_msg}
+        return {'uuid': project_uuid, "error_msg": project.error_msg}
 
 
 @api_v1.route("/projects/<string:project_uuid>")
@@ -252,7 +251,7 @@ class Project(Resource):
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
         project = cli_project.load_project(project_path)
-        return {"project_uuid": project.uuid, "manifest": project.project_config, "error_msg": project.error_msg}
+        return {"project_uuid": project_uuid, "manifest": project.project_config, "error_msg": project.error_msg}
 
     @api_v1.marshal_with(project_delete_model)
     @api_v1.response(200, 'OK')
@@ -284,7 +283,7 @@ class ProjectFiles(Resource):
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
 
         project = cli_project.load_project(project_path)
-        return {"project_uuid": project.uuid, "files": project.project_config["files"]}
+        return {"project_uuid": project_uuid, "files": project.project_config["files"]}
 
     @api_v1.expect(file_upload_parser)
     @api_v1.marshal_with(files_post_model)
@@ -308,11 +307,11 @@ class ProjectFiles(Resource):
             log.warning("Overriding existing file {}".format(file.filename))
 
         # save uploaded file to project and add to project manifest
-        log.debug("Adding uploaded file {} to project with UUID {}".format(file.filename, project.uuid))
+        log.debug("Adding uploaded file {} to project with UUID {}".format(file.filename, project_uuid))
         file.save(os.path.join(project_path, file.filename))
         project.add_file(os.path.join(project_path, file.filename), args["file_type"])
 
-        return {"project_uuid": project.uuid, "filename": file.filename, "error_msg": project.error_msg}
+        return {"project_uuid": project_uuid, "filename": file.filename, "error_msg": project.error_msg}
 
     @api_v1.expect(filename_parser)
     @api_v1.marshal_with(files_delete_model)
@@ -333,13 +332,13 @@ class ProjectFiles(Resource):
         # check if file exists
         filename = args["filename"]
         if not os.path.isfile(os.path.join(project_path, filename)):
-            log.error("File {} not found in project with UUID {}".format(filename, project.uuid))
-            return {"project_uuid": project.uuid, "error_msg": "File {} not found in project".format(filename)}, 404
+            log.error("File {} not found in project with UUID {}".format(filename, project_uuid))
+            return {"project_uuid": project_uuid, "error_msg": "File {} not found in project".format(filename)}, 404
 
         # remove file from project manifest and delete it
         project.remove_file(os.path.join(project_path, filename))
         os.remove(os.path.join(project_path, filename))
-        return {"project_uuid": project.uuid, "removed_file": filename, "error_msg": project.error_msg}
+        return {"project_uuid": project_uuid, "removed_file": filename, "error_msg": project.error_msg}
 
 
 # TODO: do we even need this if we have the packager?
@@ -360,7 +359,7 @@ class ProjectDownload(Resource):
         project = cli_project.load_project(project_path)
 
         # zip the project
-        zip_path = os.path.join('projects', project.uuid + '.zip')
+        zip_path = os.path.join('projects', project_uuid + '.zip')
         zipped_project = zipfile.ZipFile(zip_path, 'w')
         for root, dirs, files in os.walk(project_path):
             for f in files:

@@ -151,7 +151,7 @@ def parse_args(input_args=None):
 
 
 # handle cli input to create/modify project
-def dispatch(args, fixed_uuid=None):
+def dispatch(args):
     if args is None:
         args = parse_args()
 
@@ -202,7 +202,7 @@ def dispatch(args, fixed_uuid=None):
             log.info("Number of VNFs and VNF image types don't match."
                      " Using default image types if necessary.")
 
-        proj = Project(ws, prj_root, fixed_uuid=fixed_uuid)
+        proj = Project(ws, prj_root)
         proj.create_prj(args)
         log.debug("Project created.")
 
