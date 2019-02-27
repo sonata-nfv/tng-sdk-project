@@ -84,7 +84,7 @@ class TestProjectCLI:
 
         # assert that the status is printed correctly
         stdout = capsys.readouterr().out
-        assert all(x in stdout for x in ['Project:', 'Vendor:', 'Version:', 'UUID:'])
+        assert all(x in stdout for x in ['Project:', 'Vendor:', 'Version:'])
         assert all(x in stdout for x in ['MIME type', 'Quantity'])
 
     # check generated descriptors (integration with descriptorgen)

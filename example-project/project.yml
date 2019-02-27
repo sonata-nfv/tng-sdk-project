@@ -1,5 +1,4 @@
 version: '0.5'
-uuid: 34eff718-da8a-40fc-94fa-341ac3c7b1db
 package:
   name: 5gtango-project-sample
   vendor: eu.5gtango
