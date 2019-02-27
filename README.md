@@ -153,7 +153,7 @@ $ curl -X DELETE localhost:5098/api/v1/projects/{uuid}/files \
 
 **REST API Swagger Specification**
 
-Find the API specification [here](swagger.peuster.de/?url=https://raw.githubusercontent.com/sonata-nfv/tng-sdk-project/master/docs/rest_api.json).
+Find the API specification [here](http://swagger.peuster.de/?url=https://raw.githubusercontent.com/sonata-nfv/tng-sdk-project/master/docs/rest_api.json).
 
 ## Documentation
 
