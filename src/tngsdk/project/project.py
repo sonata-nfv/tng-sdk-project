@@ -317,6 +317,10 @@ class Project:
     def get_vnfds(self, type='application/vnd.5gtango.vnfd'):
         return self.get_file_paths(type)
 
+    # return a list of relative file paths to all TSTDs (default: Tango TSTDs)
+    def get_tstds(self, type='application/vnd.5gtango.tstd'):
+        return self.get_file_paths(type)
+
     # return a list of relative (to proj root) file paths to files of the specified type
     def get_file_paths(self, type):
         return [f['path'] for f in self._prj_config['files'] if f['type'] == type]
