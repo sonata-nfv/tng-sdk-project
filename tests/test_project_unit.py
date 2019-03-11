@@ -39,6 +39,7 @@ import tngsdk.project.workspace as workspace
 from tngsdk.project.workspace import Workspace
 from tngsdk.project.project import Project
 
+
 class TestProjectUnit:
 
     # create and return a temporary workspace 'test-ws'
@@ -57,7 +58,7 @@ class TestProjectUnit:
         yield 'test-ws'
         shutil.rmtree('test-ws')
 
-
+    # test descriptors of project 'example-project'    
     def test_example_project_descriptors(self, workspace):
         ws = Workspace.load_workspace(workspace)
         example_project = Project.load_project('example-project', workspace=ws)
