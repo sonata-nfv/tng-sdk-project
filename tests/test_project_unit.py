@@ -63,7 +63,7 @@ class TestProjectUnit:
         ws = Workspace.load_workspace(workspace)
         example_project = Project.load_project('example-project', workspace=ws)
         example_project.status()
- 
+
         vnfds = example_project.get_vnfds()
         assert vnfds == ['tango_vnfd0.yml']
 
