@@ -23,3 +23,7 @@ files:
   type: application/vnd.5gtango.vnfd
   tags:
   - eu.5gtango
+- path: test-descriptor-example.yml
+  type: application/vnd.5gtango.tstd
+  tags:
+  - eu.5gtango
