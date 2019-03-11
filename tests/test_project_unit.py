@@ -58,12 +58,12 @@ class TestProjectUnit:
         yield 'test-ws'
         shutil.rmtree('test-ws')
 
-    # test descriptors of project 'example-project'    
+    # test descriptors of project 'example-project'
     def test_example_project_descriptors(self, workspace):
         ws = Workspace.load_workspace(workspace)
         example_project = Project.load_project('example-project', workspace=ws)
         example_project.status()
-        
+ 
         vnfds = example_project.get_vnfds()
         assert vnfds == ['tango_vnfd0.yml']
 
