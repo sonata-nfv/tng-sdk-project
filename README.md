@@ -195,8 +195,8 @@ This 5GTANGO component is published under Apache 2.0 license. Please see the LIC
 
 The following lead developers are responsible for this repository and have admin rights. They can, for example, merge pull requests.
 
+- Stefan Schneider ([@stefanbschneider](https://github.com/stefanbschneider))
 - Manuel Peuster ([@mpeuster](https://github.com/mpeuster))
-- Stefan Schneider ([@StefanUPB](https://github.com/StefanUPB))
 
 #### Feedback-Chanel
 
