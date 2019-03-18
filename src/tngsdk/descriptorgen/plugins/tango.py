@@ -9,9 +9,9 @@ def generate_descriptors(user_inputs, log):
     log.debug('Loading 5GTANGO default descriptors')
     descriptor_dir = os.path.join(os.path.dirname(__file__), os.pardir, 'default-descriptors')
     with open(os.path.join(descriptor_dir, 'tango_default_nsd.yml')) as f:
-        tango_default_nsd = yaml.load(f)
+        tango_default_nsd = yaml.load(f, Loader=yaml.FullLoader)
     with open(os.path.join(descriptor_dir, 'tango_default_vnfd.yml')) as f:
-        tango_default_vnfd = yaml.load(f)
+        tango_default_vnfd = yaml.load(f, Loader=yaml.FullLoader)
 
     # generate VNFDs
     log.debug('Generating 5GTANGO VNFDs')

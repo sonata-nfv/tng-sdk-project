@@ -68,7 +68,7 @@ class Project:
 
         # get config from workspace for URL->MIME mapping
         with open(workspace.config["projects_config"], 'r') as config_file:
-            self.type_mapping = yaml.load(config_file)
+            self.type_mapping = yaml.load(config_file, Loader=yaml.FullLoader)
 
     @property
     def project_root(self):
@@ -157,7 +157,7 @@ class Project:
         # check yml files to detect and classify 5GTANGO descriptors
         if extension == ".yml" or extension == ".yaml":
             with open(file, 'r') as yml_file:
-                yml_file = yaml.load(yml_file)
+                yml_file = yaml.load(yml_file, Loader=yaml.FullLoader)
                 if 'descriptor_schema' in yml_file:
                     type = self.type_mapping[yml_file['descriptor_schema']]
                 # try to detect OSM descriptors based on field names
@@ -267,7 +267,7 @@ class Project:
     def translate_descriptor(self, descriptor_file, vnfd):
         log.info('Translating descriptor {}'.format(descriptor_file))
         with open(descriptor_file, 'r') as f:
-            descriptor = yaml.load(f)
+            descriptor = yaml.load(f, Loader=yaml.FullLoader)
 
         descriptor.pop('descriptor_version')
         if vnfd:
@@ -355,7 +355,7 @@ class Project:
         log.info("Loading project '{}'".format(prj_filename))
         with open(prj_filename, 'r') as prj_file:
             try:
-                prj_config = yaml.load(prj_file)
+                prj_config = yaml.load(prj_file, Loader=yaml.FullLoader)
             except yaml.YAMLError as exc:
                 log.error("Error parsing descriptor file: {0}".format(exc))
                 return

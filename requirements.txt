@@ -1,6 +1,6 @@
 pytest
 tavern>=0.26
-pyaml
+pyyaml>=5.1
 oyaml
 coloredlogs
 tabulate

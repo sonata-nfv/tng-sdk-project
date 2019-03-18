@@ -54,7 +54,7 @@ class TestDescriptorgenCLI:
 
         # check tango nsd and vnfd
         with open(os.path.join('test-descriptorgen', 'tango_nsd.yml'), 'r') as f:
-            tango_nsd = yaml.load(f)
+            tango_nsd = yaml.load(f, Loader=yaml.FullLoader)
             assert tango_nsd['author'] == 'test.author'
             assert tango_nsd['vendor'] == 'test.vendor'
             assert tango_nsd['name'] == 'test.service'
@@ -62,13 +62,13 @@ class TestDescriptorgenCLI:
             assert len(tango_nsd['network_functions']) == 1
 
         with open(os.path.join('test-descriptorgen', 'tango_vnfd0.yml'), 'r') as f:
-            tango_vnfd = yaml.load(f)
+            tango_vnfd = yaml.load(f, Loader=yaml.FullLoader)
             assert tango_vnfd['author'] == 'test.author'
             assert tango_vnfd['vendor'] == 'test.vendor'
 
         # check osm nsd and vnfd
         with open(os.path.join('test-descriptorgen', 'osm_nsd.yml'), 'r') as f:
-            osm_nsd = yaml.load(f)
+            osm_nsd = yaml.load(f, Loader=yaml.FullLoader)
             assert osm_nsd['vendor'] == 'test.vendor'
             assert osm_nsd['id'] == 'test.service'
             assert osm_nsd['name'] == 'test.service'
@@ -76,7 +76,7 @@ class TestDescriptorgenCLI:
             assert len(osm_nsd['constituent-vnfd']) == 1
 
         with open(os.path.join('test-descriptorgen', 'osm_vnfd0.yml'), 'r') as f:
-            osm_vnfd = yaml.load(f)
+            osm_vnfd = yaml.load(f, Loader=yaml.FullLoader)
             assert osm_vnfd['vnfd-catalog']['vnfd'][0]['vendor'] == 'test.vendor'
 
         # clean up: remove test folder again
@@ -93,11 +93,11 @@ class TestDescriptorgenCLI:
 
         # check the NSDs
         with open(os.path.join('test-descriptorgen', 'tango_nsd.yml'), 'r') as f:
-            tango_nsd = yaml.load(f)
+            tango_nsd = yaml.load(f, Loader=yaml.FullLoader)
             assert len(tango_nsd['network_functions']) == num_vnfs
 
         with open(os.path.join('test-descriptorgen', 'osm_nsd.yml'), 'r') as f:
-            osm_nsd = yaml.load(f)
+            osm_nsd = yaml.load(f, Loader=yaml.FullLoader)
             assert len(osm_nsd['constituent-vnfd']) == num_vnfs
 
         # check all vnfd files exist

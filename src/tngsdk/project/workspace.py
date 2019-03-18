@@ -241,7 +241,7 @@ class Workspace:
 
         ws_file = open(ws_filename, 'r')
         try:
-            ws_config = yaml.load(ws_file)
+            ws_config = yaml.load(ws_file, Loader=yaml.FullLoader)
 
         except yaml.YAMLError as exc:
             log.error("Error parsing descriptor file '{0}': {1}"
