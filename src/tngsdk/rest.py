@@ -356,7 +356,7 @@ class ProjectDownload(Resource):
         if not os.path.isdir(project_path):
             log.error("No project found with name/UUID {}".format(project_uuid))
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
-        project = cli_project.load_project(project_path)
+        # project = cli_project.load_project(project_path)
 
         # zip the project
         zip_path = os.path.join('projects', project_uuid + '.zip')
