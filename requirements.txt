@@ -1,5 +1,5 @@
 pytest
-tavern
+tavern>=0.26
 pyaml
 oyaml
 coloredlogs

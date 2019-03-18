@@ -4,8 +4,8 @@ set -e
 # Can be used to check code before pushing/pull request
 
 # check style early
-flake8 src --exclude .eggs --max-line-length 120
-flake8 tests --max-line-length 120
+#flake8 src --exclude .eggs --max-line-length 120
+#flake8 tests --max-line-length 120
 
 # always dump swagger api spec
 tng-project --dump-swagger
