@@ -27,6 +27,11 @@ pipeline {
                 sh "pipeline/checkstyle/check.sh"
             }
         }
+        stage('Smoke tests') {
+            steps {
+                echo 'Stage: Smoke test... (not implemented)'
+            }
+        }
         stage('Integration tests (SDK-tools)')
         {
             steps {
@@ -38,23 +43,6 @@ pipeline {
             steps {
                 echo 'Stage: Container publication...'
 				sh "pipeline/publish/publish.sh"
-            }
-        }
-        stage('Deploy in integration') {
-            steps {
-                echo 'Stage: Deploy in integration ... (not implemented)'
-            }
-        }
-        stage('Smoke tests') {
-            steps {
-                echo 'Stage: Smoke test... (not implemented)'
-            }
-        }
-        stage('Publication') {
-            steps {
-                echo 'Stage: Publication... (not implemented)'
-                // Public container publication
-                // Pypi publication
             }
         }
     }

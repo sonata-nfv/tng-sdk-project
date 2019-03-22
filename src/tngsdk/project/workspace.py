@@ -241,7 +241,7 @@ class Workspace:
 
         ws_file = open(ws_filename, 'r')
         try:
-            ws_config = yaml.load(ws_file)
+            ws_config = yaml.load(ws_file, Loader=yaml.FullLoader)
 
         except yaml.YAMLError as exc:
             log.error("Error parsing descriptor file '{0}': {1}"
@@ -415,10 +415,7 @@ def init_workspace(args=None):
 
         # If a workspace already exists at user home, throw an error and quit
         if os.path.isdir(ws_root):
-            print("A workspace already exists in {}. "
-                  "Please specify a different location.\n"
-                  .format(ws_root), file=sys.stderr)
-            log.warning("A workspace already exists in {}.".format(ws_root))
+            log.warning("A workspace already exists in {}. Please specify a different location.".format(ws_root))
             return
 
     else:
@@ -427,8 +424,7 @@ def init_workspace(args=None):
     # init workspace
     ws = Workspace(ws_root, log_level=log_level)
     if ws.check_ws_exists():
-        print("A workspace already exists at the specified location",
-              file=sys.stderr)
+        log.warning("A workspace already exists at the specified location")
         exit(1)
 
     log.debug("Attempting to create a new workspace")

@@ -39,7 +39,7 @@ import shutil
 import zipfile
 from flask import Flask, Blueprint
 from flask_restplus import Resource, Api, Namespace, fields
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.datastructures import FileStorage
 from tngsdk import cli
 # important: import as cli_project; else would collide with Project class here
@@ -356,7 +356,7 @@ class ProjectDownload(Resource):
         if not os.path.isdir(project_path):
             log.error("No project found with name/UUID {}".format(project_uuid))
             return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
-        project = cli_project.load_project(project_path)
+        # project = cli_project.load_project(project_path)
 
         # zip the project
         zip_path = os.path.join('projects', project_uuid + '.zip')
