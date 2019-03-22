@@ -424,8 +424,7 @@ def init_workspace(args=None):
     # init workspace
     ws = Workspace(ws_root, log_level=log_level)
     if ws.check_ws_exists():
-        print("A workspace already exists at the specified location",
-              file=sys.stderr)
+        log.warning("A workspace already exists at the specified location")
         exit(1)
 
     log.debug("Attempting to create a new workspace")

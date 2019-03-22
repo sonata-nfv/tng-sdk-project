@@ -32,7 +32,6 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 
-import sys
 import os
 import logging
 import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
