@@ -261,7 +261,7 @@ class Project:
         types = defaultdict(int)
         for f in self._prj_config['files']:
             types[f['type']] += 1
-        print(tabulate(types.items(), ['MIME type', 'Quantity'], 'grid'))
+        print(tabulate(types.items(), headers=['MIME type', 'Quantity'], tablefmt='grid'))
 
     # translate old SONATA VNFD or NSD to new 5GTANGO format (descriptor_version --> descriptor_schema)
     def translate_descriptor(self, descriptor_file, vnfd):
