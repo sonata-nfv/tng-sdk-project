@@ -235,9 +235,16 @@ class Workspace:
             ws_root = Workspace.DEFAULT_WORKSPACE_DIR
         ws_filename = os.path.join(ws_root, Workspace.__descriptor_name__)
         if not os.path.isdir(ws_root) or not os.path.isfile(ws_filename):
-            log.error("Unable to load workspace descriptor '{}'. "
-                      "Create workspace with tng-wks and specify location with -w".format(ws_filename))
-            return None
+            if ws_root == Workspace.DEFAULT_WORKSPACE_DIR:
+                # if we tried the default WS, and cannot find it,
+                # assume first execution of tng-sdk-project and just
+                # create the default WS
+                create_workspace(ws_root)
+            else:
+                log.error("Unable to load workspace descriptor '{}'. "
+                          "Create workspace with tng-wks and specify "
+                          + "location with -w".format(ws_filename))
+                return None
 
         ws_file = open(ws_filename, 'r')
         try:
@@ -420,8 +427,11 @@ def init_workspace(args=None):
 
     else:
         ws_root = os.path.expanduser(args.workspace)
+    create_workspace(ws_root, log_level)
 
-    # init workspace
+
+def create_workspace(ws_root, log_level="INFO"):
+    # create a new workspace
     ws = Workspace(ws_root, log_level=log_level)
     if ws.check_ws_exists():
         log.warning("A workspace already exists at the specified location")
