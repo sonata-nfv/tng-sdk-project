@@ -110,8 +110,7 @@ class Project:
         # create project root directory (if it doesn't exist)
         log.info('Creating project at {}'.format(self._prj_root))
         if os.path.isdir(self._prj_root):
-            print("Unable to create project at '{}'. Directory already exists."
-                  .format(self._prj_root), file=sys.stderr)
+            log.error("Unable to create project at '{}'. Directory already exists.".format(self._prj_root))
             exit(1)
         os.makedirs(self._prj_root, exist_ok=False)
 

@@ -415,10 +415,7 @@ def init_workspace(args=None):
 
         # If a workspace already exists at user home, throw an error and quit
         if os.path.isdir(ws_root):
-            print("A workspace already exists in {}. "
-                  "Please specify a different location.\n"
-                  .format(ws_root), file=sys.stderr)
-            log.warning("A workspace already exists in {}.".format(ws_root))
+            log.warning("A workspace already exists in {}. Please specify a different location.".format(ws_root))
             return
 
     else:
