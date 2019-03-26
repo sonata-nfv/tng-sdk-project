@@ -120,6 +120,12 @@ docker run --rm -d -p 5098:5098 --name tng-sdk-project registry.sonata-nfv.eu:50
 This will run the tool in service mode in a detached Docker container, i.e., in the background.
 See the [wiki page on Docker deployment](https://github.com/sonata-nfv/tng-sdk-project/wiki/docker-deployment) for additional details.
 
+The Docker image is also available on [DockerHub](https://hub.docker.com/r/sonatanfv/tng-sdk-project):
+
+```bash
+docker pull sonatanfv/tng-sdk-project
+```
+
 **Calling the REST API**
 
 Showing, adding, deleting projects:
