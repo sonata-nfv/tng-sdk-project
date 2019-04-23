@@ -101,7 +101,7 @@ For more information, use `tng-descriptorgen -h`.
 
 ### Service mode with REST API
 
-**Run on bare metal:**
+#### Run on bare metal
 
 ```bash
 # terminal 1
@@ -110,29 +110,36 @@ $ tng-project -s    # starts the tool in service mode (running forever)
 
 This will start the tool in service mode running in the terminal forever until stopped with Ctrl+C.
 
-**Run in Docker container:**
+
+#### Run in Docker container
+
+##### Locally-build images
 
 ```bash
 pipeline/build/build.sh
 docker run --rm -d -p 5098:5098 --name tng-sdk-project registry.sonata-nfv.eu:5000/tng-sdk-project
 ```
 
-This will run the tool in service mode in a detached Docker container, i.e., in the background.
-See the [wiki page on Docker deployment](https://github.com/sonata-nfv/tng-sdk-project/wiki/docker-deployment) for additional details.
+##### Image from DockerHub
 
 The Docker image is also available on [DockerHub](https://hub.docker.com/r/sonatanfv/tng-sdk-project):
 
 ```bash
-docker pull sonatanfv/tng-sdk-project
+docker pull sonatanfv/tng-sdk-project:dev
+docker run --rm -d -p 5098:5098 --name tng-sdk-project sonatanfv/tng-sdk-project:dev
 ```
 
-**Calling the REST API**
+This will run the tool in service mode in a detached Docker container, i.e., in the background (check with `docker ps`).
+See the [wiki page on Docker deployment](https://github.com/sonata-nfv/tng-sdk-project/wiki/docker-deployment) for additional details.
+
+
+#### Calling the REST API
 
 Showing, adding, deleting projects:
 ```bash
 # terminal 2
-$ curl -X GET localhost:5098/api/v1/projects             # show all projects
 $ curl -X POST localhost:5098/api/v1/projects            # create a new project
+$ curl -X GET localhost:5098/api/v1/projects             # show all projects
 $ curl -X POST localhost:5098/api/v1/projects \
 -d author=alice -d vendor=eu.tango -d vnfs=3             # new project with custom-generated descriptors
 $ curl -X POST localhost:5098/api/v1/projects \
@@ -157,7 +164,8 @@ $ curl -X DELETE localhost:5098/api/v1/projects/{uuid}/files \
 
 *Note:* If using the Docker deployment, replace `localhost` with the IP address of the Docker host.
 
-**REST API Swagger Specification**
+
+#### REST API Swagger Specification
 
 Find the API specification [here](http://swagger.peuster.de/?url=https://raw.githubusercontent.com/sonata-nfv/tng-sdk-project/master/docs/rest_api.json).
 
