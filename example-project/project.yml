@@ -11,6 +11,9 @@ files:
   type: application/vnd.etsi.osm.nsd
   tags:
   - etsi.osm
+  testing_tags:
+  - foo
+  - bar
 - path: osm_vnfd0.yml
   type: application/vnd.etsi.osm.vnfd
   tags:
@@ -19,6 +22,8 @@ files:
   type: application/vnd.5gtango.nsd
   tags:
   - eu.5gtango
+  testing_tags:
+  - could_be_anything
 - path: tango_vnfd0.yml
   type: application/vnd.5gtango.vnfd
   tags:
