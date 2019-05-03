@@ -72,3 +72,12 @@ class TestProjectUnit:
 
         tstds = example_project.get_tstds()
         assert tstds == ['tstd-example.yml']
+
+        slads = example_project.get_slads()
+        assert slads == ['slad-example.yml']
+
+        rpds = example_project.get_rpds()
+        assert rpds == ['rpd-example.yml']
+
+        nstds = example_project.get_nstds()
+        assert nstds == ['nstd-example.yml']
