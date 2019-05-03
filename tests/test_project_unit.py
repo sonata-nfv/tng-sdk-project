@@ -71,4 +71,4 @@ class TestProjectUnit:
         assert nsds == ['tango_nsd.yml']
 
         tstds = example_project.get_tstds()
-        assert tstds == ['test-descriptor-example.yml']
+        assert tstds == ['tstd-example.yml']
