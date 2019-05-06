@@ -64,4 +64,4 @@ setup(name='tngsdk.project',
           ],
       },
       test_suite='tngsdk',
-      tests_require=['pytest', 'tavern', 'pycodestyle'])
+      tests_require=['pytest', 'tavern', 'flake8'])

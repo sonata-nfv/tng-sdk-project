@@ -163,8 +163,7 @@ def dispatch(args):
 
     ws = Workspace.load_workspace(ws_root)
     if not ws:
-        print("Could not find a 5GTANGO workspace at the specified location",
-              file=sys.stderr)
+        log.error("Could not find a 5GTANGO workspace at the specified location")
         exit(1)
 
     prj_root = os.path.expanduser(args.project)

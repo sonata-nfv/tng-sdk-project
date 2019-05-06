@@ -9,9 +9,9 @@ def generate_descriptors(user_inputs, log):
     log.debug('Loading OSM default descriptors')
     descriptor_dir = os.path.join(os.path.dirname(__file__), os.pardir, 'default-descriptors')
     with open(os.path.join(descriptor_dir, 'osm_default_nsd.yml')) as f:
-        osm_default_nsd = yaml.load(f)
+        osm_default_nsd = yaml.load(f, Loader=yaml.FullLoader)
     with open(os.path.join(descriptor_dir, 'osm_default_vnfd.yml')) as f:
-        osm_default_vnfd = yaml.load(f)
+        osm_default_vnfd = yaml.load(f, Loader=yaml.FullLoader)
 
     # generate VNFDs
     log.debug('Generating 5GTANGO VNFDs')

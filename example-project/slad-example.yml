@@ -1,0 +1,37 @@
+---
+descriptor_schema: https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/sla-template-descriptor/sla-template-schema.yml
+name: silver-template-example
+vendor: UPRC
+version: '2.0'
+sla_template:
+  template_name: Silver
+  offer_date: '2018-11-14T11:35:10Z'
+  expiration_date: '2019-11-14T11:35:10Z'
+  provider_name: Telefonica
+  template_initiator: Evgenia Kapassa
+  service:
+    ns_uuid: 0e69ccfd-d9ba-4439-99b8-cd4f2a059457
+    ns_name: ns-squid-haproxy
+    ns_vendor: eu.5gtango
+    ns_version: '0.2'
+    guaranteeTerms:
+    - guaranteeID: g1
+      guarantee_name: Availability
+      guarantee_threshold: '98'
+      guarantee_operator: greater
+      guarantee_unit: "%"
+      guarantee_period: Daily
+      guarantee_definition: ''
+      target_slo:
+      - target_kpi: Downtime
+        target_value: 1728s
+        target_operator: less
+        target_duration: 10s
+        target_period: 24h
+        target_service_level: Downtime less 1728s
+  licenses:
+    service_based:
+      service_licence_type: Trial
+      allowed_service_instances: '10'
+      service_licence_period: 30 days
+      service_licence_expiration_date: '2018-12-14T11:35:10Z'

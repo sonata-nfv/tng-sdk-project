@@ -99,12 +99,12 @@ class TestProjectCLI:
 
         # test if fields are set correctly
         with open(os.path.join(project.project_root, 'tango_nsd.yml'), 'r') as f:
-            tango_nsd = yaml.load(f)
+            tango_nsd = yaml.load(f, Loader=yaml.FullLoader)
             assert tango_nsd['author'] == 'test.author'
             assert tango_nsd['vendor'] == 'test.vendor'
             assert len(tango_nsd['network_functions']) == 2
         with open(os.path.join(project.project_root, 'osm_nsd.yml'), 'r') as f:
-            osm_nsd = yaml.load(f)
+            osm_nsd = yaml.load(f, Loader=yaml.FullLoader)
             assert osm_nsd['vendor'] == 'test.vendor'
             assert len(osm_nsd['constituent-vnfd']) == 2
 
@@ -128,7 +128,7 @@ class TestProjectCLI:
         cli.dispatch(args)
         project_yml_path = os.path.join(project_path, 'project.yml')
         with open(project_yml_path) as open_file:
-            project_yml = yaml.load(open_file)
+            project_yml = yaml.load(open_file, Loader=yaml.FullLoader)
             project_files = [f['path'] for f in project_yml['files']]
             assert 'sample.txt' in project_files
 
@@ -143,6 +143,6 @@ class TestProjectCLI:
 
         # check if NSD was removed
         with open(project_yml_path) as open_file:
-            project_yml = yaml.load(open_file)
+            project_yml = yaml.load(open_file, Loader=yaml.FullLoader)
             project_files = [f['path'] for f in project_yml['files']]
             assert 'sample.txt' not in project_files

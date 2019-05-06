@@ -201,17 +201,26 @@ class Workspace:
         yaml.dump(cfg_d, ws_file, default_flow_style=False)
 
         # write project config (schema-MIME mapping)
-        # reverse mapping (type to schema) for translation of old SONATA descriptors
         mapping = {
-            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/function-descriptor/vnfd-schema.yml':
-                'application/vnd.5gtango.vnfd',
-            'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml':
-                'application/vnd.5gtango.nsd',
             'application/vnd.5gtango.vnfd':
                 'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/function-descriptor/vnfd-schema.yml',
             'application/vnd.5gtango.nsd':
-                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml'
+                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml',
+            'application/vnd.5gtango.tstd':
+                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/test-descriptor/testdescriptor'
+                '-schema.yml',
+            'application/vnd.5gtango.slad':
+                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/sla-template-descriptor/sla-template'
+                '-schema.yml',
+            'application/vnd.5gtango.rpd':
+                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/policy-descriptor/policy-schema.yml',
+            'application/vnd.5gtango.nstd':
+                'https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/slice-descriptor/nst-schema.yml'
         }
+        # add reverse mapping (type to schema) for translation of old SONATA descriptors
+        reverse_mapping = {v: k for k, v in mapping.items()}
+        mapping.update(reverse_mapping)
+
         conf_path = os.path.join(self.workspace_root, 'projects', 'config.yml')
         conf_file = open(conf_path, 'w')
         yaml.dump(mapping, conf_file, default_flow_style=False)
@@ -235,13 +244,20 @@ class Workspace:
             ws_root = Workspace.DEFAULT_WORKSPACE_DIR
         ws_filename = os.path.join(ws_root, Workspace.__descriptor_name__)
         if not os.path.isdir(ws_root) or not os.path.isfile(ws_filename):
-            log.error("Unable to load workspace descriptor '{}'. "
-                      "Create workspace with tng-wks and specify location with -w".format(ws_filename))
-            return None
+            if ws_root == Workspace.DEFAULT_WORKSPACE_DIR:
+                # if we tried the default WS, and cannot find it,
+                # assume first execution of tng-sdk-project and just
+                # create the default WS
+                create_workspace(ws_root)
+            else:
+                log.error("Unable to load workspace descriptor '{}'. "
+                          "Create workspace with tng-wks and specify "
+                          + "location with -w".format(ws_filename))
+                return None
 
         ws_file = open(ws_filename, 'r')
         try:
-            ws_config = yaml.load(ws_file)
+            ws_config = yaml.load(ws_file, Loader=yaml.FullLoader)
 
         except yaml.YAMLError as exc:
             log.error("Error parsing descriptor file '{0}': {1}"
@@ -415,20 +431,19 @@ def init_workspace(args=None):
 
         # If a workspace already exists at user home, throw an error and quit
         if os.path.isdir(ws_root):
-            print("A workspace already exists in {}. "
-                  "Please specify a different location.\n"
-                  .format(ws_root), file=sys.stderr)
-            log.warning("A workspace already exists in {}.".format(ws_root))
+            log.warning("A workspace already exists in {}. Please specify a different location.".format(ws_root))
             return
 
     else:
         ws_root = os.path.expanduser(args.workspace)
+    create_workspace(ws_root, log_level)
 
-    # init workspace
+
+def create_workspace(ws_root, log_level="INFO"):
+    # create a new workspace
     ws = Workspace(ws_root, log_level=log_level)
     if ws.check_ws_exists():
-        print("A workspace already exists at the specified location",
-              file=sys.stderr)
+        log.warning("A workspace already exists at the specified location")
         exit(1)
 
     log.debug("Attempting to create a new workspace")

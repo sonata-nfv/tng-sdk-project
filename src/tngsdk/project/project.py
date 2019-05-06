@@ -32,7 +32,6 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 
-import sys
 import os
 import logging
 import oyaml as yaml        # ordered yaml to avoid reordering of descriptors
@@ -68,7 +67,7 @@ class Project:
 
         # get config from workspace for URL->MIME mapping
         with open(workspace.config["projects_config"], 'r') as config_file:
-            self.type_mapping = yaml.load(config_file)
+            self.type_mapping = yaml.load(config_file, Loader=yaml.FullLoader)
 
     @property
     def project_root(self):
@@ -110,8 +109,7 @@ class Project:
         # create project root directory (if it doesn't exist)
         log.info('Creating project at {}'.format(self._prj_root))
         if os.path.isdir(self._prj_root):
-            print("Unable to create project at '{}'. Directory already exists."
-                  .format(self._prj_root), file=sys.stderr)
+            log.error("Unable to create project at '{}'. Directory already exists.".format(self._prj_root))
             exit(1)
         os.makedirs(self._prj_root, exist_ok=False)
 
@@ -157,7 +155,7 @@ class Project:
         # check yml files to detect and classify 5GTANGO descriptors
         if extension == ".yml" or extension == ".yaml":
             with open(file, 'r') as yml_file:
-                yml_file = yaml.load(yml_file)
+                yml_file = yaml.load(yml_file, Loader=yaml.FullLoader)
                 if 'descriptor_schema' in yml_file:
                     type = self.type_mapping[yml_file['descriptor_schema']]
                 # try to detect OSM descriptors based on field names
@@ -261,13 +259,13 @@ class Project:
         types = defaultdict(int)
         for f in self._prj_config['files']:
             types[f['type']] += 1
-        print(tabulate(types.items(), ['MIME type', 'Quantity'], 'grid'))
+        print(tabulate(types.items(), headers=['MIME type', 'Quantity'], tablefmt='grid'))
 
     # translate old SONATA VNFD or NSD to new 5GTANGO format (descriptor_version --> descriptor_schema)
     def translate_descriptor(self, descriptor_file, vnfd):
         log.info('Translating descriptor {}'.format(descriptor_file))
         with open(descriptor_file, 'r') as f:
-            descriptor = yaml.load(f)
+            descriptor = yaml.load(f, Loader=yaml.FullLoader)
 
         descriptor.pop('descriptor_version')
         if vnfd:
@@ -321,6 +319,15 @@ class Project:
     def get_tstds(self, type='application/vnd.5gtango.tstd'):
         return self.get_file_paths(type)
 
+    def get_slads(self, type='application/vnd.5gtango.slad'):
+        return self.get_file_paths(type)
+
+    def get_rpds(self, type='application/vnd.5gtango.rpd'):
+        return self.get_file_paths(type)
+
+    def get_nstds(self, type='application/vnd.5gtango.nstd'):
+        return self.get_file_paths(type)
+
     # return a list of relative (to proj root) file paths to files of the specified type
     def get_file_paths(self, type):
         return [f['path'] for f in self._prj_config['files'] if f['type'] == type]
@@ -355,7 +362,7 @@ class Project:
         log.info("Loading project '{}'".format(prj_filename))
         with open(prj_filename, 'r') as prj_file:
             try:
-                prj_config = yaml.load(prj_file)
+                prj_config = yaml.load(prj_file, Loader=yaml.FullLoader)
             except yaml.YAMLError as exc:
                 log.error("Error parsing descriptor file: {0}".format(exc))
                 return
