@@ -37,7 +37,7 @@ import os
 import uuid
 import shutil
 import zipfile
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, request, send_from_directory
 from flask_restplus import Resource, Api, Namespace, fields
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.datastructures import FileStorage
@@ -48,7 +48,7 @@ from tngsdk.project.project import Project as cli_project
 
 log = logging.getLogger(__name__)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 app.wsgi_app = ProxyFix(app.wsgi_app)
 blueprint = Blueprint('api', __name__, url_prefix="/api")
 api_v1 = Namespace("v1", description="tng-project API v1")
@@ -130,7 +130,7 @@ projects_post_model = api_v1.model("ProjectsPost", {
 project_get_model = api_v1.model("ProjectGet", {
     "project_uuid": fields.String(description="project UUID", required=True),
     "manifest": fields.String(description="project manifest", required=True),
-    "error_msg": fields.String(description="error message")
+    "error_msg": fields.String(description="error message"),
 })
 project_delete_model = api_v1.model("ProjectDelete", {
     "project_uuid": fields.String(description="project UUID", required=True)
@@ -157,6 +157,13 @@ files_delete_model = api_v1.model("FilesDelete", {
     "error_msg": fields.String(description="error message")
 })
 
+# url model for static file
+url_model = api_v1.model("Url", {
+	"project_uuid": fields.String(description="Project UUID", required=True),
+	"file_name": fields.String(description="file name", required=True),
+	"url": fields.String(description="url for the requested file"),
+	"error_msg": fields.String(description="error message")
+})
 
 def dump_swagger():
     """Dump Swagger specification in docs/rest_api.json"""
@@ -188,6 +195,29 @@ class Ping(Resource):
             log.warning(str(e))
         return {"alive_since": uptime}
 
+# @api_v1.route("/projects/<string:project_uuid>/<string:file_name>")
+# class Projects(Resource):
+# 	#@api_v1.marshal_with(url_model)
+# 	def get(self, project_uuid, file_name):
+# 		#print(project_uuid)
+# 		#print(file_name)
+# 		#print(app.root_path)
+# 		#print(app.instance_path)
+# 		#return {"project_uuid": project_uuid, "file_name": file_name, "error_msg": send_from_directory(project_uuid, file_name)}
+# 		print("project_uuid: ", project_uuid)
+# 		print("file_name: ", file_name)
+# 		return send_from_directory('example-project', file_name)
+
+# @api_v1.route("/projects/<path:path>")
+# class Projects(Resource):
+# 	def get(self, path):
+# 		print("path: ", path)
+# 		return send_from_directory('.', path)
+
+@app.route('/<path:path>')
+def serve_page(path):
+	print("path: ", path)
+	return send_from_directory('static', path)
 
 @api_v1.route("/projects")
 class Projects(Resource):
