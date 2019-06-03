@@ -48,7 +48,7 @@ from tngsdk.project.project import Project as cli_project
 
 log = logging.getLogger(__name__)
 
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 blueprint = Blueprint('api', __name__, url_prefix="/api")
 api_v1 = Namespace("v1", description="tng-project API v1")
@@ -157,14 +157,6 @@ files_delete_model = api_v1.model("FilesDelete", {
     "error_msg": fields.String(description="error message")
 })
 
-# url model for static file
-url_model = api_v1.model("Url", {
-	"project_uuid": fields.String(description="Project UUID", required=True),
-	"file_name": fields.String(description="file name", required=True),
-	"url": fields.String(description="url for the requested file"),
-	"error_msg": fields.String(description="error message")
-})
-
 def dump_swagger():
     """Dump Swagger specification in docs/rest_api.json"""
     # TODO replace this with the URL of a real tng-project service
@@ -194,30 +186,6 @@ class Ping(Resource):
         except BaseException as e:
             log.warning(str(e))
         return {"alive_since": uptime}
-
-# @api_v1.route("/projects/<string:project_uuid>/<string:file_name>")
-# class Projects(Resource):
-# 	#@api_v1.marshal_with(url_model)
-# 	def get(self, project_uuid, file_name):
-# 		#print(project_uuid)
-# 		#print(file_name)
-# 		#print(app.root_path)
-# 		#print(app.instance_path)
-# 		#return {"project_uuid": project_uuid, "file_name": file_name, "error_msg": send_from_directory(project_uuid, file_name)}
-# 		print("project_uuid: ", project_uuid)
-# 		print("file_name: ", file_name)
-# 		return send_from_directory('example-project', file_name)
-
-# @api_v1.route("/projects/<path:path>")
-# class Projects(Resource):
-# 	def get(self, path):
-# 		print("path: ", path)
-# 		return send_from_directory('.', path)
-
-@app.route('/<path:path>')
-def serve_page(path):
-	print("path: ", path)
-	return send_from_directory('static', path)
 
 @api_v1.route("/projects")
 class Projects(Resource):
@@ -296,6 +264,13 @@ class Project(Resource):
 
         shutil.rmtree(project_path)
         return {"project_uuid": project_uuid}
+
+
+@api_v1.route("/projects/<string:project_uuid>/<string:file_name>")
+class Projects(Resource):
+	def get(self, project_uuid, file_name):
+		projects_directory = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'projects')
+		return send_from_directory(projects_directory, project_uuid + "/" + file_name)
 
 
 @api_v1.route("/projects/<string:project_uuid>/files")
