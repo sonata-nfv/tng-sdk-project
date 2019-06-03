@@ -44,11 +44,12 @@ from werkzeug.datastructures import FileStorage
 from tngsdk import cli
 # important: import as cli_project; else would collide with Project class here
 from tngsdk.project.project import Project as cli_project
-
+from flask_cors import CORS
 
 log = logging.getLogger(__name__)
 
 app = Flask(__name__)
+CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 blueprint = Blueprint('api', __name__, url_prefix="/api")
 api_v1 = Namespace("v1", description="tng-project API v1")
