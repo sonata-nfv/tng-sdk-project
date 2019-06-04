@@ -39,6 +39,14 @@ pipeline {
                 sh "docker run --rm --name tng-sdk-project-int registry.sonata-nfv.eu:5000/tng-sdk-project pipeline/unittest/test_sdk_integration.sh"
             }
         }
+        stage ("Downstream jobs: Trigger tng-sdk-package build") {
+            when{
+                branch 'master'
+            }
+            steps {
+                build job: '../tng-sdk-package-pipeline/master', wait: true
+            }
+        }
         stage('Container publication') {
             steps {
                 echo 'Stage: Container publication...'
