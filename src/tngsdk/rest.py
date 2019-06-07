@@ -37,7 +37,7 @@ import os
 import uuid
 import shutil
 import zipfile
-from flask import Flask, Blueprint, request, send_from_directory
+from flask import Flask, Blueprint, send_from_directory
 from flask_restplus import Resource, Api, Namespace, fields
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.datastructures import FileStorage
@@ -158,6 +158,7 @@ files_delete_model = api_v1.model("FilesDelete", {
     "error_msg": fields.String(description="error message")
 })
 
+
 def dump_swagger():
     """Dump Swagger specification in docs/rest_api.json"""
     # TODO replace this with the URL of a real tng-project service
@@ -187,6 +188,7 @@ class Ping(Resource):
         except BaseException as e:
             log.warning(str(e))
         return {"alive_since": uptime}
+
 
 @api_v1.route("/projects")
 class Projects(Resource):
@@ -268,10 +270,11 @@ class Project(Resource):
 
 
 @api_v1.route("/projects/<string:project_uuid>/<string:file_name>")
-class Projects(Resource):
-	def get(self, project_uuid, file_name):
-		projects_directory = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'projects')
-		return send_from_directory(projects_directory, project_uuid + "/" + file_name)
+class ProjectSpecificFile(Resource):
+    def get(self, project_uuid, file_name):
+        directory_name = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+        projects_directory = os.path.join(directory_name, 'projects')
+        return send_from_directory(projects_directory, project_uuid + "/" + file_name)
 
 
 @api_v1.route("/projects/<string:project_uuid>/files")
