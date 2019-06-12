@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # ensure that no old container is there
-#docker rm -f tng-sdk-project || true
+docker rm -f tng-sdk-project || true
 # start container
 docker run --rm -d -p 5098:5098 --name tng-sdk-project registry.sonata-nfv.eu:5000/tng-sdk-project
 # trigger unittests
