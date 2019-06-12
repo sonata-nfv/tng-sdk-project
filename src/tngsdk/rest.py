@@ -272,6 +272,7 @@ class Project(Resource):
 @api_v1.route("/projects/<string:project_uuid>/<string:file_name>")
 class ProjectSpecificFile(Resource):
     def get(self, project_uuid, file_name):
+        """Get the content of the specified file of required project"""
         directory_name = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
         projects_directory = os.path.join(directory_name, 'projects')
         return send_from_directory(projects_directory, project_uuid + "/" + file_name)
