@@ -166,6 +166,7 @@ $ curl -X POST localhost:5098/api/v1/projects/{uuid}/files \
     -F file="@LICENSE" -F file_type="text/plain"            # add new file with specific MIME type
 $ curl -X DELETE localhost:5098/api/v1/projects/{uuid}/files \
     -d filename="requirements.txt"                          # remove the specified file
+$ curl -X GET localhost:5098/api/v1/projects/{uuid}/{file_name} # show content of the specified file of specified project
 ```
 
 *Note:* If using the Docker deployment, replace `localhost` with the IP address of the Docker host.
