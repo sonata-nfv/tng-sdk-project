@@ -7,5 +7,6 @@ coloredlogs
 tabulate
 requests
 Flask>=0.10.1
+Flask-Cors>=3.0.7
 werkzeug>=0.15.1
 flask-restplus
