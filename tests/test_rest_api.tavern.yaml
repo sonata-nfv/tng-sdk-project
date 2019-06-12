@@ -72,6 +72,24 @@ stages:
         manifest: !anything
         error_msg: null
 
+  # /projects/{uuid}/{file_name} endpoint
+  - name: Access project.yaml file of project
+    request:
+      url: "http://localhost:5098/api/v1/projects/{uuid_project2:s}/project.yml"
+      method: GET
+    response:
+      # project and file both found
+      status_code: 200
+
+  # /projects/{uuid}/{file_name} endpoint
+  - name: Access project.yaml file of project
+    request:
+      url: "http://localhost:5098/api/v1/projects/{uuid_project2:s}/never.ever"
+      method: GET
+    response:
+      # file not found
+      status_code: 404
+
   - name: Delete project
     request:
       url: "http://localhost:5098/api/v1/projects/{uuid_project1:s}"

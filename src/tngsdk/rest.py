@@ -37,18 +37,19 @@ import os
 import uuid
 import shutil
 import zipfile
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, send_from_directory
 from flask_restplus import Resource, Api, Namespace, fields
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.datastructures import FileStorage
 from tngsdk import cli
 # important: import as cli_project; else would collide with Project class here
 from tngsdk.project.project import Project as cli_project
-
+from flask_cors import CORS
 
 log = logging.getLogger(__name__)
 
 app = Flask(__name__)
+CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 blueprint = Blueprint('api', __name__, url_prefix="/api")
 api_v1 = Namespace("v1", description="tng-project API v1")
@@ -130,7 +131,7 @@ projects_post_model = api_v1.model("ProjectsPost", {
 project_get_model = api_v1.model("ProjectGet", {
     "project_uuid": fields.String(description="project UUID", required=True),
     "manifest": fields.String(description="project manifest", required=True),
-    "error_msg": fields.String(description="error message")
+    "error_msg": fields.String(description="error message"),
 })
 project_delete_model = api_v1.model("ProjectDelete", {
     "project_uuid": fields.String(description="project UUID", required=True)
@@ -266,6 +267,15 @@ class Project(Resource):
 
         shutil.rmtree(project_path)
         return {"project_uuid": project_uuid}
+
+
+@api_v1.route("/projects/<string:project_uuid>/<string:file_name>")
+class ProjectSpecificFile(Resource):
+    def get(self, project_uuid, file_name):
+        """Get the content of the specified file of required project"""
+        directory_name = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+        projects_directory = os.path.join(directory_name, 'projects')
+        return send_from_directory(projects_directory, project_uuid + "/" + file_name)
 
 
 @api_v1.route("/projects/<string:project_uuid>/files")
