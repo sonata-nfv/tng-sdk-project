@@ -40,6 +40,12 @@ virtualenv -p <path/to/python3> venv
 source venv/bin/activate
 ```
 
+Sometimes you might have to upgrade the version of your installed `pip` packages if they are outdated. This can be done with:
+
+```bash
+pip install <package-name> --upgrade
+```
+
 ## Usage
 
 ### CLI
