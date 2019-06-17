@@ -45,6 +45,8 @@ from tngsdk import cli
 # important: import as cli_project; else would collide with Project class here
 from tngsdk.project.project import Project as cli_project
 from flask_cors import CORS
+from os import listdir
+from os.path import isfile, join
 
 log = logging.getLogger(__name__)
 
@@ -126,12 +128,13 @@ projects_get_model = api_v1.model("ProjectsGet", {
 })
 projects_post_model = api_v1.model("ProjectsPost", {
     "uuid": fields.String(description="project UUID", required=True),
-    "error_msg": fields.String(description="error message")
+    "error_msg": fields.String(description="error message"),
+    "files": fields.List(fields.String, description="list of files along with access points", required=True)
 })
 project_get_model = api_v1.model("ProjectGet", {
     "project_uuid": fields.String(description="project UUID", required=True),
     "manifest": fields.String(description="project manifest", required=True),
-    "error_msg": fields.String(description="error message"),
+    "error_msg": fields.String(description="error message", required=True),
 })
 project_delete_model = api_v1.model("ProjectDelete", {
     "project_uuid": fields.String(description="project UUID", required=True)
@@ -235,7 +238,15 @@ class Projects(Resource):
         cli_args = cli.parse_args(dgn_args)
         project = cli.dispatch(cli_args)
 
-        return {'uuid': project_uuid, "error_msg": project.error_msg}
+        project_path = os.path.join('projects', project_uuid)
+        project_files = [f for f in listdir(project_path) if isfile(join(project_path, f))]
+        info = {'uuid': project_uuid, "error_msg": project.error_msg, "files": []}
+        files = []
+        for f in project_files:
+            files.append('http://127.0.0.1:5098/api/v1/projects/' + project_uuid + '/' + f)
+
+        info['files'] = files
+        return info
 
 
 @api_v1.route("/projects/<string:project_uuid>")
