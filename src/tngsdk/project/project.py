@@ -150,6 +150,10 @@ class Project:
 
     # detects and returns MIME type of specified file
     def mime_type(self, file):
+        if os.path.isdir(file):
+            log.debug('Detected MIME type: file-system/folder')
+            return 'file-system/folder'
+
         name, extension = os.path.splitext(file)
 
         # check yml files to detect and classify 5GTANGO descriptors
