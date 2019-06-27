@@ -44,9 +44,3 @@ files:
   type: application/vnd.5gtango.nstd
   tags:
   - eu.5gtango
-- path: example
-  type: application/octet-stream
-  tags: []
-- path: abdafda
-  type: application/octet-stream
-  tags: []
