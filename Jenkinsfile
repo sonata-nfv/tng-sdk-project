@@ -36,6 +36,8 @@ pipeline {
         {
             steps {
                 echo 'Stage: Integration tests (SDK-tools)'
+                # ensure that no old container is there
+                sh "docker rm -f tng-sdk-project || true"
                 sh "docker run --rm --name tng-sdk-project-int registry.sonata-nfv.eu:5000/tng-sdk-project pipeline/unittest/test_sdk_integration.sh"
             }
         }
