@@ -150,32 +150,37 @@ class Project:
 
     # detects and returns MIME type of specified file
     def mime_type(self, file):
+        # tag folders to be zipped by packager
         if os.path.isdir(file):
-            log.debug('Detected MIME type: file-system/folder')
-            return 'file-system/folder'
+            type = 'application/vnd.folder.compressed.zip'
 
-        name, extension = os.path.splitext(file)
+        elif os.path.isfile(file):
+            name, extension = os.path.splitext(file)
 
-        # check yml files to detect and classify 5GTANGO descriptors
-        if extension == ".yml" or extension == ".yaml":
-            with open(file, 'r') as yml_file:
-                yml_file = yaml.load(yml_file, Loader=yaml.FullLoader)
-                if 'descriptor_schema' in yml_file:
-                    type = self.type_mapping[yml_file['descriptor_schema']]
-                # try to detect OSM descriptors based on field names
-                elif 'constituent-vnfd' in yml_file and 'vld' in yml_file:
-                    type = 'application/vnd.etsi.osm.nsd'
-                elif 'vnfd-catalog' in yml_file:
-                    type = 'application/vnd.etsi.osm.vnfd'
-                else:
-                    log.warning('Could not detect MIME type of {}. '
-                                'Using text/yaml'.format(file))
-                    type = 'text/yaml'
+            # check yml files to detect and classify 5GTANGO descriptors
+            if extension == ".yml" or extension == ".yaml":
+                with open(file, 'r') as yml_file:
+                    yml_file = yaml.load(yml_file, Loader=yaml.FullLoader)
+                    if 'descriptor_schema' in yml_file:
+                        type = self.type_mapping[yml_file['descriptor_schema']]
+                    # try to detect OSM descriptors based on field names
+                    elif 'constituent-vnfd' in yml_file and 'vld' in yml_file:
+                        type = 'application/vnd.etsi.osm.nsd'
+                    elif 'vnfd-catalog' in yml_file:
+                        type = 'application/vnd.etsi.osm.vnfd'
+                    else:
+                        log.warning('Could not detect MIME type of {}. '
+                                    'Using text/yaml'.format(file))
+                        type = 'text/yaml'
 
-        # for non-yml files determine the type using mimetypes
+            # for non-yml files determine the type using mimetypes
+            else:
+                (type, encoding) = mimetypes.guess_type(file, strict=False)
+                # add more types from a config with mimetypes.read_mime_types(file)
+
         else:
-            (type, encoding) = mimetypes.guess_type(file, strict=False)
-            # add more types from a config with mimetypes.read_mime_types(file)
+            log.warning('{} is not a file or directory. Not added to project.'.format(file))
+            return -1
 
         log.debug('Detected MIME type: {}'.format(type))
         return type
@@ -191,6 +196,9 @@ class Project:
         # try to detect the MIME type if none is given
         if type is None:
             type = self.mime_type(file_path)
+            # path is not a file or directory -> ignore and don't add
+            if type == -1:
+                return
         if type is None:
             log.warning('Could not detect MIME type of {}. Using "application/octet-stream".'.format(file_path))
             self.error_msg = 'Could not detect MIME type of {}. Using "application/octet-stream".'.format(file_path)
