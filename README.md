@@ -2,7 +2,6 @@
 [![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-sdk-project-pipeline/master)](https://jenkins.sonata-nfv.eu/job/tng-sdk-project-pipeline/job/master/)
 
 <p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
-
 # tng-sdk-project
 
 This repository contains the `tng-sdk-project` component that is part of the European H2020 project [5GTANGO](http://www.5gtango.eu) NFV SDK. This component is responsible to manage network service workspaces and projects on the developer's machine. It allows preparing 5GTANGO projects containing service descriptions, for example. These projects are prepared for packaging and future use by other components.
@@ -138,8 +137,9 @@ docker run --rm -d -p 5098:5098 --name tng-sdk-project sonatanfv/tng-sdk-project
 This will run the tool in service mode in a detached Docker container, i.e., in the background (check with `docker ps`).
 See the [wiki page on Docker deployment](https://github.com/sonata-nfv/tng-sdk-project/wiki/docker-deployment) for additional details.
 
-
 #### Calling the REST API
+
+You can find the **Swagger API specification [here](https://sonata-nfv.github.io/tng-doc/?urls.primaryName=5GTANGO%20SDK%20Project%20API%20v1)**. Additionally, see the examples below.
 
 Showing, adding, deleting projects:
 ```bash
@@ -168,13 +168,6 @@ $ curl -X DELETE localhost:5098/api/v1/projects/{uuid}/files \
     -d filename="requirements.txt"                          # remove the specified file
 $ curl -X GET localhost:5098/api/v1/projects/{uuid}/{file_name} # show content of the specified file of specified project
 ```
-
-*Note:* If using the Docker deployment, replace `localhost` with the IP address of the Docker host.
-
-
-#### REST API Swagger Specification
-
-Find the API specification [here](http://swagger.peuster.de/?url=https://raw.githubusercontent.com/sonata-nfv/tng-sdk-project/master/docs/rest_api.json).
 
 ## Documentation
 
