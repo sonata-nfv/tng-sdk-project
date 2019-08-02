@@ -42,6 +42,13 @@ services:
       - tng-sdk-project-vol:/tng-sdk-project/
     ports:
       - 5098:5098
+  theia-ide:
+    image: theiaide/theia
+    container_name: theia-ide
+    volumes:
+      - tng-sdk-project-vol:/home/project
+    ports:
+      - 3000:3000
 
 volumes:
   tng-sdk-project-vol:
