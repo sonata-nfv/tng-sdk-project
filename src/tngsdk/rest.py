@@ -391,3 +391,43 @@ class ProjectDownload(Resource):
 
         # TODO: return the zipped project; async?
         return "not implemented", 501
+
+
+@api_v1.route("/projects/<string:project_uuid>/package")
+class ProjectPackage(Resource):
+    """Package the specified project using tng-sdk-package (if installed)"""
+
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project not found")
+    @api_v1.response(500, "Packaging error")
+    @api_v1.response(503, "tng-sdk-package not installed")
+    def get(self, project_uuid):
+        log.info("GET to /projects/{}/package".format(project_uuid))
+
+        # try to load the project
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+
+        # try to import the packager if it's installed
+        try:
+            import tngsdk.package
+        except BaseException as ex:
+            log.error("Cancel packaging: tng-sdk-package not installed")
+            log.debug(ex)
+            return {'error_msg': "Cancel packaging: tng-sdk-package not installed"}, 503
+
+        # call the packager
+        args = [
+            '--package', project_path,
+            '--output', project_path,
+            '--skip-validation'
+            # FIXME: Fix validation errors with generated descriptors, then enable validation
+        ]
+        r = tngsdk.package.run(args)
+        if r.error is not None:
+            return {'error_msg': "Package error: {}".format(r.error)}, 500
+        pkg_path = r.metadata.get("_storage_location")
+        log.debug("Packaged to {}".format(pkg_path))
+        return {'project_uuid': project_uuid, 'package_path': pkg_path, 'error_msg': None}
