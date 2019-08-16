@@ -78,6 +78,3 @@ class TestProjectUnit:
 
         rpds = example_project.get_rpds()
         assert rpds == ['rpd-example.yml']
-
-        nstds = example_project.get_nstds()
-        assert nstds == ['nstd-example.yml']
