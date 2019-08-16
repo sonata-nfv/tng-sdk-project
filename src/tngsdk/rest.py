@@ -38,7 +38,7 @@ import uuid
 import shutil
 import zipfile
 from flask import Flask, Blueprint, send_from_directory
-from flask_restplus import Resource, Api, Namespace, fields
+from flask_restplus import Resource, Api, Namespace, fields, inputs
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.datastructures import FileStorage
 from tngsdk import cli
@@ -95,12 +95,14 @@ project_parser.add_argument("image_types",
                             default="",
                             help="List of VNF image types (space-separated)")
 project_parser.add_argument("only_tango",
-                            type=bool,
+                            # do not use "bool"!
+                            # https://github.com/noirbizarre/flask-restplus/issues/199#issuecomment-276645303
+                            type=inputs.boolean,
                             required=False,
                             default=False,
                             help="Generate only 5GTANGO descriptors")
 project_parser.add_argument("only_osm",
-                            type=bool,
+                            type=inputs.boolean,
                             required=False,
                             default=False,
                             help="Generate only OSM descriptors")

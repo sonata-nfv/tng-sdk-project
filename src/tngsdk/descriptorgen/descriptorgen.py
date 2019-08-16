@@ -68,6 +68,8 @@ def generate(args=None):
     else:
         coloredlogs.install(level='INFO')
 
+    log.info("Generating descriptors with args {}".format(args))
+
     # generate and save tango descriptors
     if not args.osm:
         descriptors = tango.generate_descriptors(args, log)
