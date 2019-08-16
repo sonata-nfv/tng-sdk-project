@@ -121,7 +121,6 @@ This will start the tool in service mode running in the terminal forever until s
 ##### Locally-build images
 
 The simplest option is using Docker Compose. 
-This automatically attaches the Docker container to a Docker volume and saves created projects persistently.
 
 ```bash
 docker-compose up
