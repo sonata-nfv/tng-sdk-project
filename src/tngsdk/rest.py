@@ -87,12 +87,10 @@ project_parser.add_argument("vnfs",
 project_parser.add_argument("image_names",
                             type=str,
                             required=False,
-                            default="",
                             help="List of VNF image names (space-separated)")
 project_parser.add_argument("image_types",
                             type=str,
                             required=False,
-                            default="",
                             help="List of VNF image types (space-separated)")
 project_parser.add_argument("only_tango",
                             # do not use "bool"!
@@ -225,9 +223,10 @@ class Projects(Resource):
                 if v:
                     dgn_args.append('--osm')
             elif k == 'image_names' or k == 'image_types':
-                dgn_args.append('--' + k)
-                # split multiple image names/types and append all of them
-                dgn_args.extend(v.split(' '))
+                if v is not None:
+                    dgn_args.append('--' + k)
+                    # split multiple image names/types and append all of them
+                    dgn_args.extend(v.split(' '))
             else:
                 # convert #vnfs from int to str (CLI only accepts string)
                 if k == 'vnfs':
@@ -364,7 +363,7 @@ class ProjectFiles(Resource):
         return {"project_uuid": project_uuid, "removed_file": filename, "error_msg": project.error_msg}
 
 
-# TODO: do we even need this if we have the packager?
+# not needed and implementation not completed; just left for possible future use
 @api_v1.deprecated
 @api_v1.route("/projects/<string:project_uuid>/download")
 class ProjectDownload(Resource):
