@@ -119,6 +119,10 @@ file_upload_parser.add_argument("file_type",
 filename_parser = api_v1.parser()
 filename_parser.add_argument("filename", required=True, help="Filename of the file to remove")
 
+package_parser = api_v1.parser()
+package_parser.add_argument("skip_validation", required=False, type=inputs.boolean, default=False,
+                            help="If true, skip validation when packaging. Else validate first.")
+
 # models for marshaling return values from the API (also used for generating Swagger spec)
 ping_get_model = api_v1.model("PingGet", {
     "alive_since": fields.String(description="system uptime", required=True)
@@ -158,6 +162,12 @@ files_post_model = api_v1.model("FilesPost", {
 files_delete_model = api_v1.model("FilesDelete", {
     "project_uuid": fields.String(description="project UUID"),
     "removed_file": fields.String(description="deleted file"),
+    "error_msg": fields.String(description="error message")
+})
+
+package_post_model = api_v1.model("PackagePost", {
+    "project_uuid": fields.String(description="project UUID"),
+    "package_path": fields.String(description="Path of the created package"),
     "error_msg": fields.String(description="error message")
 })
 
@@ -394,14 +404,16 @@ class ProjectDownload(Resource):
 
 @api_v1.route("/projects/<string:project_uuid>/package")
 class ProjectPackage(Resource):
-    """Package the specified project using tng-sdk-package (if installed)"""
-
+    @api_v1.expect(package_parser)
+    @api_v1.marshal_with(package_post_model)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
     @api_v1.response(500, "Packaging error")
     @api_v1.response(503, "tng-sdk-package not installed")
-    def get(self, project_uuid):
-        log.info("GET to /projects/{}/package".format(project_uuid))
+    def post(self, project_uuid):
+        """Package (and validate) the specified project using tng-sdk-package (if installed)"""
+        args = package_parser.parse_args()
+        log.info("POST to /projects/{}/package with args: {}".format(project_uuid, args))
 
         # try to load the project
         project_path = os.path.join('projects', project_uuid)
@@ -421,9 +433,10 @@ class ProjectPackage(Resource):
         args = [
             '--package', project_path,
             '--output', project_path,
-            '--skip-validation'
-            # FIXME: Fix validation errors with generated descriptors, then enable validation
         ]
+        if args.skip_validation:
+            log.debug("Skipping validation")
+            args.append('--skip-validation')
         r = tngsdk.package.run(args)
         if r.error is not None:
             return {'error_msg': "Package error: {}".format(r.error)}, 500
