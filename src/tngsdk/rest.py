@@ -430,14 +430,14 @@ class ProjectPackage(Resource):
             return {'error_msg': "Cancel packaging: tng-sdk-package not installed"}, 503
 
         # call the packager
-        args = [
+        pkg_args = [
             '--package', project_path,
             '--output', project_path,
         ]
-        if args.skip_validation:
+        if args['skip_validation']:
             log.debug("Skipping validation")
-            args.append('--skip-validation')
-        r = tngsdk.package.run(args)
+            pkg_args.append('--skip-validation')
+        r = tngsdk.package.run(pkg_args)
         if r.error is not None:
             return {'error_msg': "Package error: {}".format(r.error)}, 500
         pkg_path = r.metadata.get("_storage_location")
