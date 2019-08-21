@@ -209,6 +209,7 @@ class Projects(Resource):
     def get(self):
         """Get list of projects"""
         log.info("GET to /projects. Loading available projects")
+        os.makedirs('projects', exist_ok=True)
         project_dirs = [name for name in os.listdir('projects') if os.path.isdir(os.path.join('projects', name))]
         return {'projects': project_dirs}
 
@@ -294,9 +295,11 @@ class Project(Resource):
 @api_v1.route("/projects/<string:project_uuid>/<string:file_name>")
 class ProjectSpecificFile(Resource):
     def get(self, project_uuid, file_name):
-        """Get the content of the specified file of required project"""
+        """Get/download the specified file from the specified project"""
+        log.info("GET to /projects/{}/{}".format(project_uuid, file_name))
         directory_name = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
         projects_directory = os.path.join(directory_name, 'projects')
+        log.debug("projects_dir: {}; dir_name: {}".format(projects_directory, directory_name))
         return send_from_directory(projects_directory, project_uuid + "/" + file_name)
 
 
