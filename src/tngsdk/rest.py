@@ -209,6 +209,7 @@ class Projects(Resource):
     def get(self):
         """Get list of projects"""
         log.info("GET to /projects. Loading available projects")
+        os.makedirs('projects', exist_ok=True)
         project_dirs = [name for name in os.listdir('projects') if os.path.isdir(os.path.join('projects', name))]
         return {'projects': project_dirs}
 
