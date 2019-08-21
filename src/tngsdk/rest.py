@@ -408,7 +408,6 @@ class ProjectPackage(Resource):
     @api_v1.marshal_with(package_post_model)
     @api_v1.response(200, 'OK')
     @api_v1.response(404, "Project not found")
-    @api_v1.response(500, "Packaging error")
     @api_v1.response(503, "tng-sdk-package not installed")
     def post(self, project_uuid):
         """Package (and validate) the specified project using tng-sdk-package (if installed)"""
@@ -439,7 +438,8 @@ class ProjectPackage(Resource):
             pkg_args.append('--skip-validation')
         r = tngsdk.package.run(pkg_args)
         if r.error is not None:
-            return {'error_msg': "Package error: {}".format(r.error)}, 500
+            return {'project_uuid': project_uuid, 'package_path': None,
+                    'error_msg': "Package error: {}".format(r.error)}
         pkg_path = r.metadata.get("_storage_location")
         log.debug("Packaged to {}".format(pkg_path))
         return {'project_uuid': project_uuid, 'package_path': pkg_path, 'error_msg': None}
