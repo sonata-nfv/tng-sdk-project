@@ -38,7 +38,7 @@ import uuid
 import shutil
 import zipfile
 from flask import Flask, Blueprint, send_from_directory
-from flask_restplus import Resource, Api, Namespace, fields
+from flask_restplus import Resource, Api, Namespace, fields, inputs
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.datastructures import FileStorage
 from tngsdk import cli
@@ -87,20 +87,20 @@ project_parser.add_argument("vnfs",
 project_parser.add_argument("image_names",
                             type=str,
                             required=False,
-                            default="",
                             help="List of VNF image names (space-separated)")
 project_parser.add_argument("image_types",
                             type=str,
                             required=False,
-                            default="",
                             help="List of VNF image types (space-separated)")
 project_parser.add_argument("only_tango",
-                            type=bool,
+                            # do not use "bool"!
+                            # https://github.com/noirbizarre/flask-restplus/issues/199#issuecomment-276645303
+                            type=inputs.boolean,
                             required=False,
                             default=False,
                             help="Generate only 5GTANGO descriptors")
 project_parser.add_argument("only_osm",
-                            type=bool,
+                            type=inputs.boolean,
                             required=False,
                             default=False,
                             help="Generate only OSM descriptors")
@@ -118,6 +118,10 @@ file_upload_parser.add_argument("file_type",
 
 filename_parser = api_v1.parser()
 filename_parser.add_argument("filename", required=True, help="Filename of the file to remove")
+
+package_parser = api_v1.parser()
+package_parser.add_argument("skip_validation", required=False, type=inputs.boolean, default=False,
+                            help="If true, skip validation when packaging. Else validate first.")
 
 # models for marshaling return values from the API (also used for generating Swagger spec)
 ping_get_model = api_v1.model("PingGet", {
@@ -158,6 +162,12 @@ files_post_model = api_v1.model("FilesPost", {
 files_delete_model = api_v1.model("FilesDelete", {
     "project_uuid": fields.String(description="project UUID"),
     "removed_file": fields.String(description="deleted file"),
+    "error_msg": fields.String(description="error message")
+})
+
+package_post_model = api_v1.model("PackagePost", {
+    "project_uuid": fields.String(description="project UUID"),
+    "package_path": fields.String(description="Path of the created package"),
     "error_msg": fields.String(description="error message")
 })
 
@@ -223,9 +233,10 @@ class Projects(Resource):
                 if v:
                     dgn_args.append('--osm')
             elif k == 'image_names' or k == 'image_types':
-                dgn_args.append('--' + k)
-                # split multiple image names/types and append all of them
-                dgn_args.extend(v.split(' '))
+                if v is not None:
+                    dgn_args.append('--' + k)
+                    # split multiple image names/types and append all of them
+                    dgn_args.extend(v.split(' '))
             else:
                 # convert #vnfs from int to str (CLI only accepts string)
                 if k == 'vnfs':
@@ -362,7 +373,7 @@ class ProjectFiles(Resource):
         return {"project_uuid": project_uuid, "removed_file": filename, "error_msg": project.error_msg}
 
 
-# TODO: do we even need this if we have the packager?
+# not needed and implementation not completed; just left for possible future use
 @api_v1.deprecated
 @api_v1.route("/projects/<string:project_uuid>/download")
 class ProjectDownload(Resource):
@@ -389,3 +400,46 @@ class ProjectDownload(Resource):
 
         # TODO: return the zipped project; async?
         return "not implemented", 501
+
+
+@api_v1.route("/projects/<string:project_uuid>/package")
+class ProjectPackage(Resource):
+    @api_v1.expect(package_parser)
+    @api_v1.marshal_with(package_post_model)
+    @api_v1.response(200, 'OK')
+    @api_v1.response(404, "Project not found")
+    @api_v1.response(500, "Packaging error")
+    @api_v1.response(503, "tng-sdk-package not installed")
+    def post(self, project_uuid):
+        """Package (and validate) the specified project using tng-sdk-package (if installed)"""
+        args = package_parser.parse_args()
+        log.info("POST to /projects/{}/package with args: {}".format(project_uuid, args))
+
+        # try to load the project
+        project_path = os.path.join('projects', project_uuid)
+        if not os.path.isdir(project_path):
+            log.error("No project found with name/UUID {}".format(project_uuid))
+            return {'error_msg': "Project not found: {}".format(project_uuid)}, 404
+
+        # try to import the packager if it's installed
+        try:
+            import tngsdk.package
+        except BaseException as ex:
+            log.error("Cancel packaging: tng-sdk-package not installed")
+            log.debug(ex)
+            return {'error_msg': "Cancel packaging: tng-sdk-package not installed"}, 503
+
+        # call the packager
+        args = [
+            '--package', project_path,
+            '--output', project_path,
+        ]
+        if args.skip_validation:
+            log.debug("Skipping validation")
+            args.append('--skip-validation')
+        r = tngsdk.package.run(args)
+        if r.error is not None:
+            return {'error_msg': "Package error: {}".format(r.error)}, 500
+        pkg_path = r.metadata.get("_storage_location")
+        log.debug("Packaged to {}".format(pkg_path))
+        return {'project_uuid': project_uuid, 'package_path': pkg_path, 'error_msg': None}

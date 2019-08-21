@@ -40,7 +40,3 @@ files:
   type: application/vnd.5gtango.slad
   tags:
   - eu.5gtango
-- path: nstd-example.yml
-  type: application/vnd.5gtango.nstd
-  tags:
-  - eu.5gtango

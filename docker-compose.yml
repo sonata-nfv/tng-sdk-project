@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 #  Copyright (c) 2015 SONATA-NFV, 5GTANGO, UBIWHERE, Paderborn University
 # ALL RIGHTS RESERVED.
 #
@@ -32,49 +30,13 @@
 # acknowledge the contributions of their colleagues of the SONATA
 # partner consortium (www.5gtango.eu).
 
-import pytest
-import os
-import shutil
-import tngsdk.project.workspace as workspace
-from tngsdk.project.workspace import Workspace
-from tngsdk.project.project import Project
 
+version: '3.7'
 
-class TestProjectUnit:
-
-    # create and return a temporary workspace 'test-ws'
-    @pytest.fixture(scope='module')
-    def workspace(self):
-        # start clean without workspace
-        if os.path.isdir('test-ws'):
-            shutil.rmtree('test-ws')
-
-        args = workspace.parse_args_workspace([
-            '-w', 'test-ws',
-            '--debug'
-        ])
-        workspace.init_workspace(args)
-        assert os.path.isdir('test-ws')
-        yield 'test-ws'
-        shutil.rmtree('test-ws')
-
-    # test descriptors of project 'example-project'
-    def test_example_project_descriptors(self, workspace):
-        ws = Workspace.load_workspace(workspace)
-        example_project = Project.load_project('example-project', workspace=ws)
-        example_project.status()
-
-        vnfds = example_project.get_vnfds()
-        assert vnfds == ['tango_vnfd0.yml']
-
-        nsds = example_project.get_nsds()
-        assert nsds == ['tango_nsd.yml']
-
-        tstds = example_project.get_tstds()
-        assert tstds == ['tstd-example.yml']
-
-        slads = example_project.get_slads()
-        assert slads == ['slad-example.yml']
-
-        rpds = example_project.get_rpds()
-        assert rpds == ['rpd-example.yml']
+services:
+  tng-sdk-project:
+    build: .
+    image: registry.sonata-nfv.eu:5000/tng-sdk-project
+    container_name: tng-sdk-project
+    ports:
+      - 5098:5098

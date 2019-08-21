@@ -121,6 +121,15 @@ This will start the tool in service mode running in the terminal forever until s
 
 ##### Locally-build images
 
+The simplest option is using Docker Compose. 
+
+```bash
+docker-compose up
+```
+
+Alternatively, you can also build and run the Docker container manually.
+The commands here don't attach to the volume, i.e., projects are not stored persistently and lost after restart.
+
 ```bash
 pipeline/build/build.sh
 docker run --rm -d -p 5098:5098 --name tng-sdk-project registry.sonata-nfv.eu:5000/tng-sdk-project
