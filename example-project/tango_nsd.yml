@@ -23,14 +23,13 @@ virtual_links:
 - id: mgmt
   connectivity_type: E-LAN
   connection_points_reference:
-  - vnf1:mgmt
-  - vnf2:mgmt
+  - vnf0:mgmt
   - mgmt
-- id: input-2-vnf1
+- id: input-2-vnf0
   connectivity_type: E-Line
   connection_points_reference:
   - input
-  - vnf1:input
+  - vnf0:input
 - id: vnf0-2-output
   connectivity_type: E-Line
   connection_points_reference:
@@ -41,17 +40,17 @@ forwarding_graphs:
   number_of_endpoints: 2
   number_of_virtual_links: 2
   constituent_virtual_links:
-  - input-2-vnf1
+  - input-2-vnf0
   - vnf0-2-output
   constituent_vnfs:
-  - vnf1
+  - vnf0
   network_forwarding_paths:
   - fp_id: fg01:fp01
     policy: none
     connection_points:
     - connection_point_ref: input
       position: 1
-    - connection_point_ref: vnf1:input
+    - connection_point_ref: vnf0:input
       position: 2
     - connection_point_ref: vnf0:output
       position: 3
