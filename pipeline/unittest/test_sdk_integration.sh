@@ -23,6 +23,9 @@ cd /tng-sdk-validation
 python setup.py develop
 tng-sdk-validate -h
 
+echo "=== Validating 'example-project' ==="
+tng-sdk-validate --project example-project
+
 echo "== SDK integration tests: Install tng-sdk-package..."
 cd /
 git clone https://github.com/sonata-nfv/tng-sdk-package.git
