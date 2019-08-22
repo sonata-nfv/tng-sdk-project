@@ -69,12 +69,3 @@ class TestProjectUnit:
 
         nsds = example_project.get_nsds()
         assert nsds == ['tango_nsd.yml']
-
-        tstds = example_project.get_tstds()
-        assert tstds == ['tstd-example.yml']
-
-        slads = example_project.get_slads()
-        assert slads == ['slad-example.yml']
-
-        rpds = example_project.get_rpds()
-        assert rpds == ['rpd-example.yml']
