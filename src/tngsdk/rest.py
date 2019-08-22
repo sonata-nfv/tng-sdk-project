@@ -47,6 +47,7 @@ from tngsdk.project.project import Project as cli_project
 from flask_cors import CORS
 from os import listdir
 from os.path import isfile, join
+import ntpath
 
 log = logging.getLogger(__name__)
 
@@ -166,9 +167,10 @@ files_delete_model = api_v1.model("FilesDelete", {
 })
 
 package_post_model = api_v1.model("PackagePost", {
-    "project_uuid": fields.String(description="project UUID"),
+    "project_uuid": fields.String(description="Project UUID"),
+    "package_name": fields.String(description="Name of the created package"),
     "package_path": fields.String(description="Path of the created package"),
-    "error_msg": fields.String(description="error message")
+    "error_msg": fields.String(description="Error message")
 })
 
 
@@ -440,9 +442,11 @@ class ProjectPackage(Resource):
             log.debug("Skipping validation")
             pkg_args.append('--skip-validation')
         r = tngsdk.package.run(pkg_args)
+        log.debug(r)
         if r.error is not None:
-            return {'project_uuid': project_uuid, 'package_path': None,
+            return {'project_uuid': project_uuid, 'package_name': None, 'package_path': None,
                     'error_msg': "Package error: {}".format(r.error)}
         pkg_path = r.metadata.get("_storage_location")
-        log.debug("Packaged to {}".format(pkg_path))
-        return {'project_uuid': project_uuid, 'package_path': pkg_path, 'error_msg': None}
+        pkg_name = ntpath.basename(pkg_path)
+        log.debug("Package name {} and path {}".format(pkg_name, pkg_path))
+        return {'project_uuid': project_uuid, 'package_name': pkg_name, 'package_path': pkg_path, 'error_msg': None}
