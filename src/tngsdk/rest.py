@@ -297,9 +297,10 @@ class ProjectSpecificFile(Resource):
     def get(self, project_uuid, file_name):
         """Get/download the specified file from the specified project"""
         log.info("GET to /projects/{}/{}".format(project_uuid, file_name))
-        file_path = os.path.join(project_uuid, file_name)
-        log.debug("file_path: {}".format(file_path))
-        return send_from_directory('projects', file_path)
+        projects_dir = os.path.realpath('projects')
+        project_path = os.path.join(projects_dir, project_uuid)
+        log.debug("Project path: {}".format(project_path))
+        return send_from_directory(project_path, file_name)
 
 
 @api_v1.route("/projects/<string:project_uuid>/files")
