@@ -16,6 +16,12 @@ Requires Python 3.5+ and `setuptools`.
 For simple, automatic installation and usage:
 
 ```bash
+# latest release from PyPi
+$ pip install tngsdk.project
+```
+
+```bash
+# latest version from GitHub master
 $ pip install git+https://github.com/sonata-nfv/tng-sdk-project.git
 ```
 

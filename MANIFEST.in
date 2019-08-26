@@ -1,1 +1,6 @@
 include src/tngsdk/descriptorgen/default-descriptors/*
+include docs/*
+include example-project/*
+include README.md
+include LICENSE
+include requirements.txt
