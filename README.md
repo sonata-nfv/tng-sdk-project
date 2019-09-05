@@ -2,10 +2,9 @@
 [![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-sdk-project-pipeline/master)](https://jenkins.sonata-nfv.eu/job/tng-sdk-project-pipeline/job/master/)
 
 <p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
-
 # tng-sdk-project
 
-This repository contains the `tng-sdk-project` component that is part of the European H2020 project [5GTANGO](http://www.5gtango.eu) NFV SDK. This component is responsible to manage network service workspaces and projects on the developer's machine. It allows preparing 5GTANGO projects containing service descriptions, for example. These projects are prepared for packaging and future use by other components.
+This repository contains the `tng-sdk-project` component that is part of the European H2020 project [5GTANGO](http://www.5gtango.eu) NFV SDK. This component is responsible for managing network service workspaces and projects on the developer's machine. It allows preparing structured 5GTANGO projects containing service descriptions, which can then be validated, packaged, and processed by other 5GTANGO SDK tools.
 
 The seed code of this component is based on the `son-cli` toolbox that was developed as part of the European H2020 project [SONATA](http://sonata-nfv.eu).
 
@@ -78,7 +77,7 @@ $ tng-project -p path/to/project --status       # shows project overview/status
 The `--workspace` option allows to specify a workspace at a custom location. Otherwise, the workspace at the default location is used.
 For both `tng-workspace` and `tng-project` the option `--debug` makes the output more verbose.
 
-Since the structure of projects and descriptors changed from SONATA (v3.1) to 5GTANGO (v4.0), `tng-project` also provides a command to automatically translate old to new projects.
+Since the structure of projects and descriptors changed from SONATA (v3.1) to 5GTANGO (v5.0), `tng-project` also provides a command to automatically translate old to new projects.
 For more information see the [corresponding wiki page](https://github.com/sonata-nfv/tng-sdk-project/wiki/Translating-SONATA-SDK-projects-to-5GTAGNO-SDK-projects).
 
 ```bash
@@ -87,7 +86,7 @@ $ tng-project -p path/to/old-project --translate   # translates the project to t
 
 #### Descriptor generation (CLI)
 This tool also includes a CLI for descriptor generation. 
-Its functionality is mostly consistent with the [GUI version](https://github.com/sonata-nfv/tng-sdk-descriptorgen) but my be preferrable to advanced users.
+Its functionality is mostly consistent with the [GUI version](https://github.com/sonata-nfv/tng-sdk-descriptorgen) but might be preferred by advanced users.
 
 The descriptor generator is integrated in the project management tool 
 such that additional arguments are passed to the descriptor generator
@@ -110,8 +109,9 @@ $ tng-descriptorgen --osm -o osm-project            # generate only OSM descript
 
 For more information, use `tng-descriptorgen -h`.
 
-
 ### Service mode with REST API
+
+In addition to the CLI, the `tng-sdk-project` tool can also be started in "service mode" and be used via its REST API. This enables simple integration with other tools or frontend services.
 
 #### Run on bare metal
 
@@ -204,8 +204,6 @@ $ python setup.py develop
 ```
 
 ### CI Integration
-
-All pull requests are automatically tested by Jenkins and will only be accepted if no test is broken.
 
 ### Run tests manually
 
