@@ -7,7 +7,7 @@ oyaml==0.6
 coloredlogs==10.0
 tabulate==0.8.3
 requests==2.22.0
-werkzeug==0.15.1
+werkzeug==0.15.3
 Flask==1.0.2
 Flask-Cors==3.0.7
 flask-restplus==0.11.0
