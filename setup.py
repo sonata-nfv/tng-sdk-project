@@ -40,7 +40,7 @@ with open(os.path.join(cwd, 'requirements.txt')) as f:
 
 setup(name='tngsdk.project',
       license='Apache License, Version 2.0',
-      version='5.1.0',
+      version='5.1.1',
       url='https://github.com/sonata-nfv/tng-sdk-project',
       author='Manuel Peuster, Stefan Schneider',
       author_email='manuel.peuster@upb.de, stefan.schneider@upb.de',
