@@ -8,3 +8,4 @@ requests
 Flask>=0.10.1
 Flask-Cors>=3.0.7
 flask-restplus
+werkzeug==0.16.0
